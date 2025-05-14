@@ -1,6 +1,7 @@
 # RecipesAndHealthManagement
 
 基于Web的食谱与健康管理平台
+https://github.com/OxiazozouO/RecipesAndHealthManagement
 
 ## 技术栈说明
 - **后端**：ASP.NET Core（C#），使用RESTful Web API架构
