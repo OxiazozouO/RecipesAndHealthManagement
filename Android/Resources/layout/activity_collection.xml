@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <TextView
+                android:textSize="36dp"
+                android:text="香蕉"
+                android:textStyle="bold"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:id="@+id/id_collection_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <View
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"/>
+
+            <ImageView
+                    android:id="@+id/id_collection_like"
+                    android:src="@drawable/ic_no_collect"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+
+            <TextView
+                    android:layout_gravity="center"
+                    android:id="@+id/id_collection_like_num"
+                    android:text="111"
+                    android:textSize="14dp"
+                    android:layout_marginRight="9dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <ImageView
+                    android:id="@+id/id_collection_share"
+                    android:src="@drawable/ic_share"
+                    android:layout_marginRight="4dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+
+            <ImageView
+                    android:id="@+id/id_collection_report"
+                    android:src="@drawable/ic_report"
+                    android:layout_marginRight="4dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shape_blue_1"
+                android:padding="6dp"
+                android:orientation="vertical">
+
+            <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/id_collection_emoji_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:alignContent="flex_start"
+                    app:alignItems="center"
+                    app:flexDirection="row"
+                    app:flexWrap="wrap"
+                    app:justifyContent="flex_start"
+                    app:showDivider="beginning|middle|end">
+
+                <ImageView
+                        android:id="@+id/id_collection_add_emoji"
+                        android:src="@drawable/ic_add_emoji"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:paddingLeft="4dp"/>
+            </com.google.android.flexbox.FlexboxLayout>
+
+            <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/id_collection_category_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:alignContent="flex_start"
+                    app:alignItems="center"
+                    app:flexDirection="row"
+                    app:flexWrap="wrap"
+                    app:justifyContent="flex_start"
+                    app:showDivider="beginning|middle|end">
+
+                <ImageView
+                        android:id="@+id/id_collection_add_category"
+                        android:src="@drawable/ic_add_category"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:paddingLeft="4dp"/>
+            </com.google.android.flexbox.FlexboxLayout>
+        </LinearLayout>
+
+        <android.component.RichEditor
+                android:id="@+id/id_collection_editor"
+                android:layout_width="match_parent"
+                android:minHeight="1000dp"
+                android:layout_height="wrap_content"/>
+
+        <include
+                android:id="@+id/id_collection_comment"
+                layout="@layout/com_comment"/>
+    </LinearLayout>
+</ScrollView>

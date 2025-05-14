@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+const pageId = 'category'
+    const {searchUi, parameter} = generateTab({
+        nav:[{href: '', title: '首页'}, {href: '', title: '资源管理'}, {href: '', title: '食材列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox', id: 'clc'}", name: 'ID'},
+            {data: "{field:'id', width:80, sort: true}", name: 'ID'},
+            {data: "{field:'name', width:150, sort: true, edit: 'text'}", name: '分类名称'},
+            {data: "{field:'type', width:100, sort: true, templet: types}", name: '类型'},
+            {data: "{field:'categories', width:250, templet: categories}", name: '关联分类'},
+            {data: "{width:150, templet: sets}", name: '操作'}
+        ],
+        search:{
+            ['name']:'请输入分类名称',
+            ['type']: CategoryOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script>
+    function sets(d) {
+        return `<a title="删除" lay-event="del"><i class="iconfont18">&#xe675;</i></a>`
+    }
+
+    function categories(d) {
+        if (!d.categories || !d.categories.length) {
+            const {c, name} = IdCategoryMap[`${Unknown}`]
+            return category(c, name)
+        }
+        return d.categories.map(item => {
+            const {c, name} = IdCategoryMap[item.idCategory.toString()] || IdCategoryMap[`${Unknown}`]
+            return category(c, `${name} (${item.count})`)
+        }).join('');
+
+        function category(c, str) {
+            return `<span class="layui-btn layui-btn-mini ${c}">${str}</span>`
+        }
+    }
+
+    function types(d) {
+        return generateStatus(d.type, CategoryMap)
+    }
+</script>
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+        <button class="layui-btn" lay-event="add">
+            <i class="iconfont">&#xe66c;</i> 添加
+        </button>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+                case 'add':
+                    xadmin.open('添加分类', 'category-editor.html', 600, 400, true)
+                    break;
+            }
+        })
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+
+        table.on(`edit(${pageId})`, obj => {
+            const value = obj.value;
+            const data = obj.data;
+
+            httpTool.execute(urls.EditCategoryName, {
+                AdminId: aid,
+                Id: data.id,
+                name: value
+            }).then(res => {
+                if (res === undefined) return
+                layer.msg('修改成功')
+                table.reload(pageId)
+            })
+        });
+
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'del':
+                    layer.confirm('确认要删除该分类吗？', index => {
+                        httpTool.execute(urls.RemoveCategory, {
+                            AdminId: aid,
+                            Id: data.id
+                        }).then(res => {
+                            if (res === undefined) return
+                            layer.msg('修改成功')
+                            table.reload(pageId)
+                        })
+                        obj.del()
+                        layer.close(index)
+                    })
+                    break
+            }
+        })
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetCategories, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+</script>
+
+</html>

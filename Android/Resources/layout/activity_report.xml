@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <TextView
+            android:text="举报[香蕉]"
+            android:id="@+id/id_report_title"
+            android:textSize="30dp"
+            android:gravity="center_horizontal"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:background="#673AB7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <LinearLayout
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <ImageView
+                android:background="@drawable/ic_warn2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
+
+        <TextView
+                android:layout_gravity="center_vertical"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                android:layout_marginLeft="20dp"
+                android:textColor="#F44336"
+                android:text="请选择举报内容（可多选）"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:id="@+id/id_report_main"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_marginLeft="30dp"
+            android:layout_height="wrap_content"/>
+
+    <FrameLayout
+            android:background="@drawable/shape_border3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <EditText
+                android:id="@+id/id_report_text"
+                android:gravity="left|top"
+                android:padding="10dp"
+                android:hint="请输入你想输入的内容（最多100字）"
+                android:background="@null"
+                android:textSize="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"/>
+
+        <TextView
+                android:id="@+id/id_report_tip"
+                android:layout_gravity="bottom|right"
+                android:padding="10dp"
+                android:text="0/100"
+                android:textSize="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </FrameLayout>
+
+    <TextView
+            android:id="@+id/id_report_sub"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginRight="12dp"
+            android:background="@drawable/shape_button_bg"
+            android:gravity="center"
+            android:text="确定举报"
+            android:textColor="#ffffff"
+            android:textSize="16sp"/>
+</LinearLayout>

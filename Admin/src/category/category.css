@@ -1,0 +1,67 @@
+.category-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    margin: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+    font-size: 14px;
+    line-height: 1;
+    min-width: 60px;
+}
+
+.type1 {
+    background: #f0f7ff;
+    border-color: #91caff;
+    color: #1677ff;
+}
+
+.type1.selected {
+    background: #1677ff;
+    border-color: #1677ff;
+    color: white;
+}
+
+.type2 {
+    background: #fff7e6;
+    border-color: #ffd591;
+    color: #fa8c16;
+}
+
+.type2.selected {
+    background: #fa541c;
+    border-color: #fa541c;
+    color: white;
+}
+
+.category-tag:not(.selected):hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.layui-table-cell {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    line-height: 1.6 !important;
+    min-height: 48px;
+}
+
+.category-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 14px;
+    margin: 4px 0;
+    vertical-align: middle;
+}
+
+.category-tag-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-height: 40px;
+}

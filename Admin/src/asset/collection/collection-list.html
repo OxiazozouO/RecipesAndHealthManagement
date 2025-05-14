@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'collection'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '资源管理'}, {href: '', title: '合集列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'       , id: 'clc'}", name: 'ID'},
+            {data: "{field:'collectionId'  , width:80  , sort: true}", name: 'ID'},
+            {data: "{field:'favoriteCount' , width:100 , sort: true}", name: '收藏量'},
+            {data: "{field:'fileUrl'       , width:100  , templet: fileUrl}", name: '合集封面'},
+            {data: "{field:'title'         , width:180 }", name: '合集名'},
+            {data: "{field:'summary'          , width:100 , sort: true}", name: '简介'},
+            {data: "{field:'status'        , width:120, templet: status, sort: true}", name: '状态'},
+            {data: "{field:'createDate'         , width:160 , sort: true}", name: '添加时间'},
+            {data: "{field:'ModifyDate'       , width:160 , sort: true}", name: '修改时间'},
+            {data: "{                        width:80 , templet: sets, }", name: '操作'},
+            {data: "{field:'uName'         , width:180, sort: true, templet: author}", name: '作者'}
+        ],
+        search: {
+            ["title"]: "请输入合集名",
+            ["summary"]: "请输入简介",
+            ["uName"]: "请输入作者名",
+            ["status"]: EntStatusOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData">获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+        <button class="layui-btn" lay-event="add">
+            <i class="iconfont">&#xe66c;</i> 添加
+        </button>
+    </div>
+</script>
+
+<script>
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, '合集')
+    }
+
+    function author(d) {
+        return `${generateImg(d.uFileUrl, '')}${d.uName}`
+    }
+
+    const setsData = [
+        {icon: '&#xe683;', title: '编辑', f: [Status.Approve, Status.On, Status.Off, Status.ForceOff], eve: 'edit'},
+        {icon: '&#xe675;', title: '删除', f: [Status.ForceOff], eve: 'del'},
+    ]
+
+    function sets(d) {
+        return setsData
+            .map(item => item.f.includes(d.status) ? `<a title="${item.title}" lay-event="${item.eve}"><i class="iconfont18">${item.icon}</i></a>` : '')
+            .join('')
+    }
+
+    function status(d) {
+        return generateStatus(d.status, EntStatusMap, 'status')
+    }
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+                case 'add':
+                    sessionStorage.setItem('collection-edit', JSON.stringify({flag: 'add'}))
+                    xadmin.open('编辑', './collection-editor.html', '', '', true)
+                    break;
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'status':
+                    if (data.status === Status.On
+                        || data.status === Status.Off
+                        || data.status === Status.ForceOff
+                        || data.status === Status.ReportOff) {
+                        const req = {
+                            AdminId: aid,
+                            Id: data.collectionId,
+                            status: data.status
+                        }
+                        httpTool.execute(urls.ReverseCollectionStatus, req).then(res => {
+                            if (res === undefined) return
+                            layer.msg('修改成功')
+                            obj.update({status: data.status === Status.On ? Status.ForceOff : Status.On})
+                            table.reload(pageId)
+                        })
+                    } else {
+                        layer.msg(data.status === Status.Pending ? '修改审核中，暂时不可以操作' : '暂时不可以操作')
+                    }
+                    break;
+                case 'edit':
+                    sessionStorage.setItem('collection-edit', JSON.stringify({flag: 'edit', id: data.collectionId}))
+                    xadmin.open('编辑', 'collection-editor.html', '', '', true)
+                    break;
+                case 'del':
+                    layer.confirm('确定删除食材？', () => {
+                        httpTool.execute(urls.DeleteCollection, {
+                            AdminId: aid,
+                            Id: data.collectionId
+                        }).then(res => {
+                            if (res === undefined) return
+                            layer.msg('删除成功')
+                        })
+                    })
+                    break;
+            }
+        })
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+            httpTool.execute(urls.GetCollections, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+</script>
+
+</html>

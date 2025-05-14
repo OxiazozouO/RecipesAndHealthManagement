@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IconFont 图标</title>
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script src="../../comm/myUtil/myUtil.js"></script>
+    <style type="text/css">
+        .icon_lists {
+            width: 100% !important;
+        }
+
+        .icon_lists li {
+            float: left;
+            width: 100px;
+            height: 180px;
+            text-align: center;
+            list-style: none !important;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .icon_lists .icon {
+            font-size: 42px;
+            line-height: 100px;
+            margin: 10px 0;
+        }
+
+        .icon_lists .icon:hover {
+            font-size: 100px;
+        }
+
+        .icon_lists li.highlight {
+            background-color: #e0f7fa;
+            box-shadow: 0 0 10px #00bcd4;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .icon_lists li.highlight .icon {
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .search-box {
+            margin: 20px;
+            padding: 10px;
+            width: calc(100% - 60px);
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<input type="text" id="search-box" class="search-box" placeholder="搜索图标..."/>
+<ul class="icon_lists clear">
+</ul>
+<div id="toast-container" class="toast-container">
+</div>
+
+<script>
+    // 加载并解析 iconfont.svg 文件
+    async function loadIcons() {
+        try {
+            // 加载 SVG 文件
+            const response = await fetch('../../../fonts/iconfont.svg');
+            const svgText = await response.text();
+
+            // 将 SVG 文本解析为 DOM 对象
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+
+            // 提取所有 <glyph> 元素
+            const glyphs = svgDoc.querySelectorAll('glyph');
+
+            // 生成 icons 数组
+            const icons = [];
+            glyphs.forEach(glyph => {
+                const name = glyph.getAttribute('glyph-name');
+                const unicode = glyph.getAttribute('unicode');
+                if (name && unicode) {
+                    icons.push({name, unicode});
+                }
+            });
+
+            return icons;
+        } catch (error) {
+            console.error('加载或解析 SVG 文件失败:', error);
+            return [];
+        }
+    }
+
+    // 显示提示框
+    function showToast(iconUnicode) {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `
+            <i class="icon iconfont">${iconUnicode}</i>
+            <span>复制成功</span>
+        `;
+
+        // 将新提示框插入到容器中
+        toastContainer.appendChild(toast);
+
+        // 触发显示动画
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+
+        // 2秒后移除提示框
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 500); // 等待动画结束后移除
+        }, 2000);
+    }
+
+    // 渲染图标到页面
+    function renderIcons(icons) {
+        const iconList = document.querySelector('.icon_lists.clear');
+        iconList.innerHTML = '';
+
+        icons.forEach(icon => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <i class="icon iconfont" draggable="false">${icon.unicode}</i>
+                <div class="name">${icon.name}</div>
+            `;
+            iconList.appendChild(li);
+
+            // 禁用右键菜单
+            li.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+
+            // 点击复制功能
+            li.addEventListener('click', () => {
+                const codePoint = icon.unicode.codePointAt(0).toString(16);
+                const codeToCopy = `<i class="iconfont">&#x${codePoint};</i>`;
+
+                // 使用 Clipboard API 复制文本
+                navigator.clipboard.writeText(codeToCopy).then(() => {
+                    showToast(icon.unicode); // 显示提示框，并传入图标 Unicode
+                }).catch(err => {
+                    console.error('复制失败: ', err);
+                });
+            });
+
+            // 鼠标进入时添加高亮样式
+            li.addEventListener('mouseenter', () => {
+                li.classList.add('highlight');
+            });
+
+            // 鼠标离开时移除高亮样式
+            li.addEventListener('mouseleave', () => {
+                li.classList.remove('highlight');
+            });
+        });
+    }
+
+    const unicode = {};
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        unicode.icons = await loadIcons();
+        renderIcons(unicode.icons);
+        const searchBox = document.getElementById('search-box');
+        searchBox.addEventListener('input', () => {
+            const icons = unicode.icons.filter(icon => icon.name.includes(searchBox.value));
+            renderIcons(icons);
+        });
+    });
+</script>
+</body>
+</html>

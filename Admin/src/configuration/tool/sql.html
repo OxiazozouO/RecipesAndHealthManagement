@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<textarea id="textInput" placeholder="请粘贴SQL" style="width: 100%;min-height: 300px;height: 100%"></textarea>
+</body>
+<script>
+    document.getElementById('textInput').addEventListener('paste', function (e) {
+        e.preventDefault();
+        const clipboardData = e.clipboardData || window.clipboardData;
+        const text = clipboardData.getData('Text');
+        this.value = text
+            .match(/CREATE TABLE[^;]+;/g)
+            .join('\n')
+            .replace(/ ENGINE=InnoDB/gi, '')
+            .replace(/ DEFAULT CHARSET=utf8mb4/gi, '')
+            .replace(/ COLLATE=utf8mb4_0900_ai_ci/gi, '')
+            .replace(/AUTO_INCREMENT=\d+ /gi, '')
+    });
+</script>
+</html>

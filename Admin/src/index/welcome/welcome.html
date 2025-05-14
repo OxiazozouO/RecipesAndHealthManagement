@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script src="../../../lib/echarts.5.4.3.js"></script>
+    <style>
+        /* 新增全局样式替代Tailwind */
+        .dashboard-container {
+            padding: 1.5rem;
+            background-color: #f3f4f6;
+        }
+        .grid-container {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+        @media (min-width: 768px) {
+            .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+            .md-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+            .md-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .lg-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+            .lg-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            padding: 1.5rem;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: auto;
+            height: 400px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 1rem;
+        }
+
+        .section-divider {
+            border-bottom: 2px solid #e2e8f0;
+            margin: 2rem 0;
+        }
+
+        /* Flex布局替代 */
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .text-lg { font-size: 1.125rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+    </style>
+</head>
+<body class="dashboard-container">
+<!-- KPI 卡片区域 -->
+<div class="section-title">统计信息</div>
+<div class="grid-container grid-cols-1 md-grid-cols-2 lg-grid-cols-4" id="kpi-cards"></div>
+<div class="section-divider"></div>
+<div class="grid-container grid-cols-1 md-grid-cols-2 lg-grid-cols-3">
+    <div class="chart-container" id="content-category-distribution"></div>
+    <div class="chart-container" id="tag-usage"></div>
+    <div class="chart-container" id="top-report-type"></div>
+</div>
+<div class="section-divider"></div>
+<div class="section-title">审核相关</div>
+<div class="grid-container grid-cols-1 md-grid-cols-2 lg-grid-cols-3">
+    <div class="chart-container" id="content-trend"></div>
+    <div class="chart-container" id="approval-status"></div>
+    <div class="chart-container" id="approval-rate"></div>
+</div>
+
+<script>
+    let mockData = []
+    const aid = sessionStorage.getItem('aid')
+
+    httpTool.execute(urls.GetDashboardData, {AdminId: aid})
+        .then(res => {
+            if (res === undefined) return
+            mockData = res.data
+            // 新增：转换字典数据为排序后的数组格式
+            const processTrendData = (dict) => {
+                return Object.entries(dict)
+                    .map(([dateStr, value]) => ({
+                        // 转换日期格式为 MM-DD
+                        date: new Date(dateStr).toISOString().slice(5, 10),
+                        value: value
+                    }))
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+            };
+            const trendData = mockData.charts.contentTrend;
+
+            // 处理三个趋势数据集
+            mockData.charts.contentTrend = {
+                recipes: processTrendData(trendData.recipesTrend),
+                ingredients: processTrendData(trendData.ingredientsTrend),
+                collections: processTrendData(trendData.collectionsTrend)
+            };
+
+            // // 初始化
+            renderKPICards();
+            initCharts();
+        })
+</script>
+<script>
+    function renderKPICards() {
+        const metrics = mockData.metrics;
+        const data = [
+            {title: '活跃用户', value: metrics.usersActive || 0, trend: '👥'},
+            {title: '食材数', value: metrics.ingredientsCount || 0, trend: '🥦'},
+            {title: '食谱数', value: metrics.recipesCount || 0, trend: '📖'},
+            {title: '合集数', value: metrics.collectionsCount || 0, trend: '🗂️'},
+            {title: '待审核内容', value: metrics.audit.pending || 0, trend: '⏳'},
+            {title: '已审核内容', value: metrics.audit.approved || 0, trend: '✅'}
+        ];
+        document.getElementById('kpi-cards').innerHTML = data.map(d => `
+                <div class="kpi-card p-6">
+                  <div class="flex justify-between">
+                    <div>
+                      <div class="text-lg font-semibold">${d.title}</div>
+                      <div class="text-3xl font-bold">${d.value}</div>
+                    </div>
+                    <div class="text-4xl">${d.trend}</div>
+                  </div>
+                </div>`).join('');
+    }
+
+    // 图表初始化
+    function initCharts() {
+        try {
+            const chartConfigs = [
+                {id: 'approval-status', option: getApprovalStatusOption()},
+                {id: 'top-report-type', option: getTopReportTypeOption()},
+                {id: 'content-trend', option: getContentTrendOption()},
+                {id: 'content-category-distribution', option: getContentCategoryDistributionOption()},
+                {id: 'tag-usage', option: getTagUsageOption()},
+                {id: 'approval-rate', option: getApprovalRateOption()}
+            ];
+
+            chartConfigs.forEach(({id, option}) => {
+                const cc = echarts.init(document.getElementById(id));
+                cc.setOption(option);
+                window.addEventListener('resize', () => cc.resize());
+            });
+        } catch (error) {
+            console.error('图表初始化失败:', error);
+        }
+    }
+
+    // 内容审核状态图表配置（使用漏斗图）
+    function getApprovalStatusOption() {
+        const audit = mockData.metrics.audit
+        return {
+            title: {text: '内容审核状态', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'item', formatter: '{a} <br/>{b} : {c}'},
+            series: [{
+                name: '审核状态',
+                type: 'funnel',
+                left: '10%',
+                top: 60,
+                bottom: 60,
+                width: '80%',
+                min: 0,
+                max: audit.pending + audit.approved + audit.rejected + audit.locked,
+                minSize: '0%',
+                maxSize: '100%',
+                sort: 'descending',
+                gap: 2,
+                label: {
+                    show: true,
+                    position: 'inside'
+                },
+                labelLine: {
+                    length: 10,
+                    lineStyle: {
+                        width: 1,
+                        type: 'solid'
+                    }
+                },
+                itemStyle: {
+                    borderColor: '#fff',
+                    borderWidth: 2
+                },
+                data: [
+                    {value: audit.pending, name: '待审核'},
+                    {value: audit.approved, name: '已审核'},
+                    {value: audit.rejected, name: '已下架'},
+                    {value: audit.locked, name: '审核已锁定'}
+                ]
+            }],
+            color: ['#5470c6', '#91cc75', '#ee6666', '#fac858']
+        };
+    }
+
+    // 高频举报类型图表配置
+    function getTopReportTypeOption() {
+        const report = mockData.charts.report;
+        return {
+            title: {text: '高频举报类型', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'item', formatter: '{b}: {c}'},
+            series: [{
+                name: '举报类型',
+                type: 'pie',
+                radius: '50%',
+                data: report,
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }],
+            color: ['#5470c6', '#91cc75', '#ee6666', '#fac858']
+        };
+    }
+
+    // 内容增长趋势图表配置
+    function getContentTrendOption() {
+        const trendData = mockData.charts.contentTrend;
+        const dates = trendData.recipes.map(d => d.date);
+        return {
+            title: {text: '内容发布趋势', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'axis'},
+            xAxis: {data: dates},
+            yAxis: {type: 'value'},
+            legend: {data: ['食谱', '食材', '合集'], bottom: 0},
+            series: [
+                {name: '食谱', type: 'line', data: trendData.recipes.map(d => d.value)},
+                {name: '食材', type: 'line', data: trendData.ingredients.map(d => d.value)},
+                {name: '合集', type: 'line', data: trendData.collections.map(d => d.value)}
+            ],
+            color: ['#5470c6', '#91cc75', '#fac858']
+        };
+    }
+
+    // 内容分类分布图表配置
+    function getContentCategoryDistributionOption() {
+        const metrics = mockData.metrics;
+        return {
+            title: {text: '内容分类分布', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'item', formatter: '{b}: {c} ({d}%)'},
+            series: [{
+                name: '内容分类',
+                type: 'pie',
+                radius: '50%',
+                data: [
+                    {value: metrics.ingredientsCount, name: '食材'},
+                    {value: metrics.recipesCount, name: '食谱'},
+                    {value: metrics.collectionsCount, name: '分类'},
+                ],
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }],
+            color: ['#5470c6', '#91cc75', '#fac858']
+        };
+    }
+
+    // 标签使用情况图表配置
+    function getTagUsageOption() {
+        const tags = mockData.charts.tags;
+        return {
+            title: {text: '标签使用情况', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'axis'},
+            xAxis: {
+                type: 'category',
+                data: tags.map(item => item.name)
+            },
+            yAxis: {type: 'value'},
+            series: [{
+                data: tags.map(item => item.value),
+                type: 'bar',
+                itemStyle: {color: '#ee6666'}
+            }]
+        };
+    }
+
+    // 审核通过率图表配置
+    function getApprovalRateOption() {
+        const metrics = mockData.metrics;
+        return {
+            title: {text: '审核通过率', left: 'center', textStyle: {fontSize: 18, fontWeight: 'bold'}},
+            tooltip: {trigger: 'item', formatter: '{b}: {c}%'},
+            series: [{
+                name: '审核通过率',
+                type: 'gauge',
+                detail: {formatter: '{value}%'},
+                data: [{value: metrics.approvalRate, name: '通过率'}]
+            }]
+        };
+    }
+</script>
+</body>
+</html>

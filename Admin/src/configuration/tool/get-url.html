@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>URL收集器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #status {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <script src="../../../js/httpUtil.js"></script>
+</head>
+<body>
+<input type="file" id="fileInput" webkitdirectory directory multiple/>
+<div id="status">请选择包含HTML文件的目录</div>
+<div id="nums"></div>
+
+<pre id="output" style="float: left; width: 48%;"></pre>
+<pre id="output2" style="float: right; width: 48%;"></pre>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const output = document.getElementById('output');
+    const output2 = document.getElementById('output2');
+    const status = document.getElementById('status');
+
+    const URL_REGEX = /urls\.([^, \n]+)/gi;
+
+    // 结果存储数组
+    let results = [];
+
+    fileInput.addEventListener('change', async (event) => {
+        results = [];
+        const files = Array.from(event.target.files);
+        const htmlFiles = files.filter(f => f.name.endsWith('.html'));
+
+        if (htmlFiles.length === 0) {
+            status.innerHTML = '未找到HTML文件';
+            return;
+        }
+
+        status.innerHTML = `正在处理 ${htmlFiles.length} 个HTML文件...`;
+
+        // 并行处理所有文件
+        await Promise.all(htmlFiles.map(processFile));
+
+        const aid = sessionStorage.getItem('aid')
+        const getp =  urls.GetPermissions
+
+        httpTool.execute(getp, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            const dict = res.data.reduce((acc, item) => {
+                acc[item.name] = item;
+                return acc;
+            }, {});
+            const mp = new Map();
+            results.forEach(i => {
+                const permissions = new Map();
+                i.data.forEach(j => {
+                    if (dict[j]) {
+                        permissions[dict[j].id] = {
+                            name: dict[j].name,
+                            category: dict[j].category,
+                            title: dict[j].title
+                        }
+                    }
+                })
+                mp[i.name] = permissions
+            })
+            output.textContent = JSON.stringify(results, null, 2);
+
+            const mp2 = new Map()
+            Object.entries(mp).forEach(([key, value]) => {
+                mp2[key] = Object.keys(value)
+            })
+            const mp3 = new Map()
+            var nums = 0;
+            Object.entries(mp2).forEach(([key, value]) => {
+                nums += 1;
+                mp3[value] = key
+            })
+
+            output2.textContent = JSON.stringify(mp3, null, 2);
+            document.getElementById("nums").textContent = `${nums}+${Object.entries(urls).length}`
+        });
+
+        status.innerHTML = `处理完成！找到 ${results.length} 个包含匹配项的文件`;
+    });
+
+    async function processFile(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const content = e.target.result;
+                const matches = [...content.matchAll(URL_REGEX)];
+                const name = (file.webkitRelativePath || file.name).replace('Admin/', '').replace('.html', '')
+                // if (name === 'GetUrl') return
+                if (matches.length > 0) {
+                    const uniqueMatches = [...new Set(matches.map(m => urls[m[1]]?.url))];
+                    results.push({name: name, data: uniqueMatches});
+                }
+                resolve();
+            };
+
+            reader.readAsText(file, 'UTF-8');
+        });
+    }
+</script>
+</body>
+</html>

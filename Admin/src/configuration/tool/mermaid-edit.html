@@ -1,0 +1,2953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mermaid图表编辑器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --sidebar-bg: #f8f9fa;
+            --primary-color: #009688;
+            --border-color: #dee2e6;
+            --hover-color: #e9ecef;
+        }
+
+        #mermaid :root {
+            --mermaid-font-family: "宋体"
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .mermaid-container {
+            display: flex;
+            height: 100vh;
+            transition: all 0.3s;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--hover-color);
+            border-color: #ccc;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar:not(.collapsed) {
+                position: absolute;
+                z-index: 100;
+                height: 100%;
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: auto;
+            padding: 2px;
+        }
+    </style>
+    <style>
+        /* 侧边栏样式 */
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            border-right: none;
+            padding: 0;
+            overflow: hidden;
+            transition: width 0.3s ease-in-out, border-right 0.3s ease-in-out;
+        }
+
+        .sidebar.collapsed .sidebar-action-bar,
+        .sidebar.collapsed .sidebar-search,
+        .sidebar.collapsed .sidebar-content,
+        .sidebar.collapsed .sidebar-top {
+            display: none;
+        }
+
+        .sidebar-top {
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .action-buttons-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons-group button {
+            background: transparent;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-buttons-group button:hover {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: #2196F3;
+        }
+
+        .sidebar.collapsed .action-buttons-group {
+            display: none;
+        }
+
+        .sidebar-search {
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .sidebar-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background-color: #aaa;
+            border-radius: 3px;
+        }
+
+        #historyList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .title-edit {
+            background: transparent;
+            border: none;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            font-size: inherit;
+            font-family: inherit;
+            color: inherit;
+            outline: none;
+            border-bottom: 1px dashed var(--primary-color);
+            display: none;
+        }
+
+        .title-edit:focus {
+            display: block;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 2px var(--primary-color);
+            border-bottom: 1px solid var(--primary-color);
+            padding: 2px 4px;
+            margin: -2px -4px;
+            border-radius: 3px;
+        }
+
+        .title-text {
+            display: block;
+        }
+
+        .editing .title-text {
+            display: none;
+        }
+
+        .editing .title-edit {
+            display: block;
+        }
+
+        .delete-chart {
+            visibility: hidden;
+            color: #dc3545;
+            background: none;
+            border: none;
+            padding: 2px 5px;
+            margin-left: 5px;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .delete-confirm {
+            display: none;
+            color: #fff;
+            background-color: #dc3545;
+            padding: 8px 10px;
+        }
+
+        .deleting .delete-chart {
+            display: none;
+            transform: translateX(-40px);
+        }
+
+        .deleting .delete-confirm {
+            display: block;
+            visibility: visible;
+            transform: translateX(0);
+            color: #fff;
+            background-color: #dc3545;
+        }
+
+        .history-item:hover .delete-chart {
+            visibility: visible;
+        }
+
+        .history-item:hover {
+            background: var(--hover-color);
+        }
+
+        .history-item.active {
+            background-color: rgba(0, 150, 136, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+
+
+        /* 展开侧边栏按钮 */
+
+        .expand-sidebar-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+
+        .expand-sidebar-button:hover {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: var(--primary-color);
+        }
+
+        .expand-sidebar-button[style*="display: block"] {
+            opacity: 1;
+        }
+
+        #collapseSidebar {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        #collapseSidebar:hover {
+            background: rgba(33, 150, 243, 0.1);
+        }
+    </style>
+    <style>
+        /* 代码编辑器样式 */
+
+        .unified-editor {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: white;
+            height: auto;
+            overflow: hidden;
+            white-space: pre;
+        }
+
+        .unified-editor {
+            width: 100%;
+            min-height: 70vh;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            overflow: auto;
+            border: 1px solid #495057;
+            height: auto;
+            box-sizing: border-box;
+            white-space: pre;
+            line-height: 1.5;
+            background-color: #fff;
+        }
+
+        .unified-editor {
+            height: var(--editor-height);
+            border: 1px solid #e0e0e0;
+            padding-bottom: 50px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .editor-tabs {
+            background: #f8f9fa;
+            padding: 8px 12px 0;
+            display: flex;
+            gap: 4px;
+        }
+
+        .layout-buttons {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .layout-button {
+            background: transparent;
+            border: none;
+            padding: 6px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .layout-button:hover {
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .editor-tab {
+            padding: 10px 24px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #666;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .editor-tab.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+            background: rgba(33, 150, 243, 0.05);
+        }
+
+        .editor-tab:hover {
+            background: rgba(33, 150, 243, 0.08);
+        }
+
+        .editor-content {
+            flex: 1;
+            top: 0;
+            position: relative;
+            background: white;
+        }
+
+        .code-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            overflow: hidden;
+        }
+
+        .code-container.active {
+            display: block;
+        }
+
+        .CodeMirror {
+            height: 100%;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .unified-editor {
+            --editor-width: 90vw;
+            --editor-height: 80vh;
+        }
+
+
+        /* 添加水平和垂直布局样式 */
+
+        .content-wrapper.horizontal-layout {
+            flex-direction: row;
+            align-items: stretch;
+            height: calc(100vh - 40px);
+        }
+
+        .content-wrapper {
+            flex-direction: column;
+        }
+
+        .content-wrapper.vertical-layout {
+            flex-direction: column;
+        }
+
+        .content-wrapper.horizontal-layout .unified-editor,
+        .content-wrapper.horizontal-layout .preview-container {
+            flex: 1;
+            max-width: 50%;
+            height: 100%;
+            margin: 0;
+        }
+
+        .content-wrapper.horizontal-layout {
+            flex-direction: row-reverse;
+        }
+
+        .content-wrapper.vertical-layout .unified-editor,
+        .content-wrapper.vertical-layout .preview-container {
+            width: 100%;
+        }
+    </style>
+    <style>
+        /* 图表查看器样式 */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+
+        /* 查看器容器样式 */
+
+        .preview-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            min-height: 200px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f5f5f5;
+            user-select: none;
+        }
+
+
+        /* 图片容器样式 */
+
+        .image-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: 0 0;
+            will-change: transform;
+            transition: transform 0.05s ease-out;
+            backface-visibility: hidden;
+            perspective: 1000px;
+            -webkit-font-smoothing: subpixel-antialiased;
+        }
+
+        .image-container:active {
+            transition: none;
+        }
+
+        .image-container.scaling {
+            transition: transform 0.2s ease-out;
+        }
+
+
+        /* 预览区域样式 */
+
+        .preview-area {
+            width: 100%;
+            height: 100%;
+            min-height: 70vh;
+            position: relative;
+            overflow: hidden;
+            padding: 2px;
+        }
+
+
+        /* 操作按钮容器样式 */
+
+        .action-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+
+        /* 操作按钮样式 */
+
+        .action-button,
+        .action-button2 {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: rgba(33, 150, 243, 0.8);
+            color: white;
+            font-size: 14px;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .action-button2 {
+            background-color: rgb(3, 162, 13);
+            color: white;
+        }
+
+        .action-button:hover,
+        .action-button2:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-button:hover {
+            background-color: rgba(13, 139, 242, 0.9);
+        }
+
+        .action-button2:hover {
+            background-color: rgb(2, 108, 10);
+        }
+
+        .action-button:active,
+        .action-button2:active {
+            transform: translateY(0);
+        }
+
+
+        /* 状态提示样式 */
+
+        .status-tip {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+            transform: translateY(-5px);
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-tip.error {
+            background-color: rgba(220, 0, 0, 0.8);
+        }
+
+
+        /* 当状态提示显示时的动画 */
+
+        .status-tip[style*="opacity: 1"] {
+            transform: translateY(0);
+        }
+
+
+        /* SVG样式优化 */
+
+        svg {
+            font-family: "SimSun", "宋体", serif !important;
+            font-size: 12pt !important;
+            border: 1px dashed #ccc;
+            box-sizing: border-box;
+        }
+
+        .node rect,
+        .node circle,
+        .node polygon {
+            fill: #fff !important;
+            stroke: #212529 !important;
+            stroke-width: 1.5px !important;
+        }
+
+        .edgePath path {
+            stroke: #212529 !important;
+        }
+
+
+        /* 网格背景样式 */
+
+
+        /* 柔和的蓝灰网格 */
+
+        .grid-background0 {
+            background-color: #eceff1;
+            background-image: linear-gradient(to right, #cfd8dc 1px, transparent 1px), linear-gradient(to bottom, #cfd8dc 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+
+
+        /* 棋盘格 (极浅灰) */
+
+        .grid-background1 {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #f5f5f5 25%, transparent 25%, transparent 75%, #f5f5f5 75%, #f5f5f5), linear-gradient(45deg, #f5f5f5 25%, transparent 25%, transparent 75%, #f5f5f5 75%, #f5f5f5);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+
+        /* 大点阵 */
+
+        .grid-background2 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#d0d0d0 2px, transparent 2px);
+            background-size: 35px 35px;
+        }
+
+
+        /* 垂直粗线与水平细线网格 */
+
+        .grid-background3 {
+            background-color: #fafafa;
+            background-image: linear-gradient(to right, #e0e0e0 2px, transparent 2px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .grid-background4 {
+            background-color: #e8f5ff;
+            background-image: linear-gradient(45deg, rgba(138, 207, 255, 0.2) 25%, transparent 25%, transparent 75%, rgba(138, 207, 255, 0.2) 75%), linear-gradient(45deg, rgba(138, 207, 255, 0.2) 25%, transparent 25%, transparent 75%, rgba(138, 207, 255, 0.2) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+
+        /* 水平粗线与垂直细线网格 */
+
+        .grid-background5 {
+            background-color: #fafafa;
+            background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #e0e0e0 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
+
+
+        /* 组合点状 */
+
+        .grid-background6 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#ccc 1px, transparent 1px), radial-gradient(#eee 1px, transparent 1px);
+            background-size: 15px 15px, 30px 30px;
+            background-position: 0 0, 7.5px 7.5px;
+        }
+
+
+        /* 微妙的对角虚线 */
+
+        .grid-background7 {
+            background-color: #fdfdfd;
+            background-image: repeating-linear-gradient(45deg, #eee, #eee 1px, transparent 1px, transparent 15px);
+        }
+
+
+        /* 细密灰色点状 */
+
+        .grid-background8 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 稍大稀疏点状 */
+
+        .grid-background9 {
+            background-color: #fdfdfd;
+            background-image: radial-gradient(#cccccc 1.5px, transparent 1.5px);
+            background-size: 25px 25px;
+        }
+
+
+        /* 浅蓝色细网格 */
+
+        .grid-background10 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #e3f2fd 1px, transparent 1px), linear-gradient(to bottom, #e3f2fd 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+
+
+        /* 浅绿色细网格 */
+
+        .grid-background11 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #e8f5e9 1px, transparent 1px), linear-gradient(to bottom, #e8f5e9 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+
+
+        /* 虚线网格 */
+
+        .grid-background12 {
+            background-color: #f9f9f9;
+            background-image: repeating-linear-gradient(0deg, #ccc, #ccc 1px, transparent 1px, transparent 10px), repeating-linear-gradient(90deg, #ccc, #ccc 1px, transparent 1px, transparent 10px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 浅灰色对角线网格 */
+
+        .grid-background13 {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #eeeeee 1px, transparent 1px), linear-gradient(-45deg, #eeeeee 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+
+        /* 细密十字图案 */
+
+        .grid-background14 {
+            background-color: #f7f7f7;
+            background-image: linear-gradient(to right, #d0d0d0 1px, transparent 1px), linear-gradient(to bottom, #d0d0d0 1px, transparent 1px);
+            background-size: 8px 8px;
+        }
+
+
+        /* 浅米色背景配深米色点 */
+
+        .grid-background15 {
+            background-color: #fdfbf6;
+            background-image: radial-gradient(#e9e3d9 1px, transparent 1px);
+            background-size: 12px 12px;
+        }
+
+
+        /* 双色点交错 */
+
+        .grid-background16 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#b0bec5 1px, transparent 1px), radial-gradient(#cfd8dc 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+
+        /* 更宽的灰色网格 */
+
+        .grid-background17 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #e0e0e0 1px, transparent 1px), linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+
+        /* 极细的浅灰网格 */
+
+        .grid-background18 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 带有细微边框感的网格 */
+
+        .grid-background19 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px), linear-gradient(to right, #e0e0e0 1px, transparent 1px), linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px, 40px 40px, 40px 40px;
+            /* Two layers */
+        }
+
+
+        /* 柔和的蓝灰点阵 */
+
+        .grid-background20 {
+            background-color: #eceff1;
+            background-image: radial-gradient(#b0bec5 1px, transparent 1px);
+            background-size: 12px 12px;
+        }
+
+
+        /* 细密斜线 */
+
+        .grid-background21 {
+            background-color: #f9f9f9;
+            background-image: repeating-linear-gradient(45deg, #e0e0e0, #e0e0e0 1px, transparent 1px, transparent 10px);
+        }
+
+
+        /* 细密反向斜线 */
+
+        .grid-background22 {
+            background-color: #f9f9f9;
+            background-image: repeating-linear-gradient(-45deg, #e0e0e0, #e0e0e0 1px, transparent 1px, transparent 10px);
+        }
+
+
+        /* 细密交叉斜线 (菱形) */
+
+        .grid-background23 {
+            background-color: #fdfdfd;
+            background-image: repeating-linear-gradient(45deg, #eeeeee, #eeeeee 1px, transparent 1px, transparent 8px), repeating-linear-gradient(-45deg, #eeeeee, #eeeeee 1px, transparent 1px, transparent 8px);
+        }
+
+
+        /* 大方格纹 */
+
+        .grid-background24 {
+            background-color: #ffffff;
+            background-image: linear-gradient(#e0e0e0 2px, transparent 2px), linear-gradient(90deg, #e0e0e0 2px, transparent 2px);
+            background-size: 50px 50px;
+        }
+
+
+        /* 浅灰色小方块 */
+
+        .grid-background25 {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+
+
+        /* 六边形点阵 (简化模拟) */
+
+        .grid-background26 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#cccccc 1.5px, transparent 1.5px), radial-gradient(#cccccc 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+
+        /* 垂直虚线 */
+
+        .grid-background27 {
+            background-color: #fdfdfd;
+            background-image: repeating-linear-gradient(90deg, #dcdcdc, #dcdcdc 1px, transparent 1px, transparent 10px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 水平虚线 */
+
+        .grid-background28 {
+            background-color: #fdfdfd;
+            background-image: repeating-linear-gradient(0deg, #dcdcdc, #dcdcdc 1px, transparent 1px, transparent 10px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 浅蓝点阵 */
+
+        .grid-background29 {
+            background-color: #e3f2fd;
+            background-image: radial-gradient(#bbdefb 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 浅绿点阵 */
+
+        .grid-background30 {
+            background-color: #e8f5e9;
+            background-image: radial-gradient(#c8e6c9 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 非常稀疏的灰色点 */
+
+        .grid-background31 {
+            background-color: #ffffff;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+
+        /* 非常稀疏的灰色网格 */
+
+        .grid-background32 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+
+        /* 灰色织物质感 */
+
+        .grid-background33 {
+            background-color: #f5f5f5;
+            background-image: linear-gradient(45deg, #e0e0e0 50%, transparent 50%), linear-gradient(-45deg, #e0e0e0 50%, transparent 50%);
+            background-size: 5px 5px;
+        }
+
+
+        /* 浅蓝色织物质感 */
+
+        .grid-background34 {
+            background-color: #e3f2fd;
+            background-image: linear-gradient(45deg, #bbdefb 50%, transparent 50%), linear-gradient(-45deg, #bbdefb 50%, transparent 50%);
+            background-size: 5px 5px;
+        }
+
+
+        /* 米色网格 */
+
+        .grid-background35 {
+            background-color: #fdfbf6;
+            background-image: linear-gradient(to right, #f4ede0 1px, transparent 1px), linear-gradient(to bottom, #f4ede0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+
+        /* 极细双色网格 */
+
+        .grid-background36 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, #eeeeee 0.5px, transparent 0.5px), linear-gradient(to bottom, #e0e0e0 0.5px, transparent 0.5px);
+            background-size: 10px 10px;
+        }
+
+
+        /* 点线交错 */
+
+        .grid-background37 {
+            background-color: #ffffff;
+            background-image: linear-gradient(to bottom, #e0e0e0 1px, transparent 1px), radial-gradient(#cccccc 1px, transparent 1px);
+            background-size: 20px 20px, 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+
+        /* 浅灰背景加白色点 */
+
+        .grid-background38 {
+            background-color: #f5f5f5;
+            background-image: radial-gradient(#ffffff 1.5px, transparent 1.5px);
+            background-size: 15px 15px;
+        }
+
+
+        /* 浅灰背景加白色网格 */
+
+        .grid-background39 {
+            background-color: #f0f0f0;
+            background-image: linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px);
+            background-size: 15px 15px;
+        }
+
+
+        /* 细小的加号图案 */
+
+        .grid-background40 {
+            background-color: #f5f7fa;
+            background-image: linear-gradient(to right, #dfe3e8 1px, transparent 1px), linear-gradient(to bottom, #dfe3e8 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+
+        /* 背景选择弹出框样式 */
+
+        .background-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            z-index: 1000;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .background-popup h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .background-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .background-preview {
+            height: 60px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .background-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .background-preview.selected {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.3);
+        }
+
+        .background-preview.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #2196f3;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 3px white;
+        }
+    </style>
+    <style>
+        /* 提示和对话框样式 */
+        .chart-type-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .chart-type-dialog-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .chart-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-type-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chart-type-item:hover {
+            border-color: var(--primary-color);
+            background-color: var(--hover-color);
+        }
+
+        .chart-type-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .chart-type-name {
+            font-size: 14px;
+        }
+
+        #cancel-chart-type {
+            display: block;
+            margin: 0 auto;
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="mermaid-editor">
+    <div class="mermaid-container">
+        <div id="sidebar"></div>
+        <div class="main-content">
+            <div class="content-wrapper vertical-layout">
+                <div id="unified-editor"></div>
+                <div id="preview-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+
+<script>
+    const cfg = `{\n    // 用于设置 Mermaid 图表的主题样式\n    // 可选项及其说明：\n    // - "base": 基础主题，可在此基础上通过 themeVariables 进行定制\n    // - "forest": 森林主题，具有自然风格的配色\n    // - "dark": 黑暗主题，适合深色背景，有较好的对比度\n    // - "default": 默认主题，是 Mermaid 预设的默认外观\n    // - "neutral": 中性主题，配色较为柔和、中立\n    // - "gatsby": Gatsby 风格主题\n    // - "forest-dark": 深色森林主题\n    // - "light": 浅色主题\n    "theme": "base",\n    // 用于自定义主题的各种变量，通过修改这些变量可以改变图表的外观\n    "themeVariables": {\n        // 定义图表的背景颜色\n        "background": "#FFFFFF",\n        // 定义图表中主要元素的颜色，如主要的形状、线条等\n        "primaryColor": "#FFFFFF",\n        // 定义图表中次要元素的颜色，用于区分不同层次的信息\n        "secondaryColor": "#FFFFFF",\n        // 定义图表中三级元素的颜色，进一步细化图表的视觉层次\n        "tertiaryColor": "#FFFFFF",\n        // 定义主要元素的边框颜色\n        "primaryBorderColor": "#000000",\n        // 定义次要元素的边框颜色\n        "secondaryBorderColor": "#000000",\n        // 定义三级元素的边框颜色\n        "tertiaryBorderColor": "#000000",\n        // 定义图表中线条的颜色，如连接线、箭头等\n        "lineColor": "#000000",\n        // 定义图表中文字的颜色\n        "textColor": "#000000",\n        // 定义注释框的背景颜色\n        "noteBkgColor": "#E5F6FF",\n        // 定义注释框内文字的颜色\n        "noteTextColor": "#333333",\n        // 定义注释框的边框颜色\n        "noteBorderColor": "#73A6FF",\n        // 定义序列图中参与者框的背景颜色\n        "actorBkgColor": "#E5F6FF",\n        // 定义序列图中参与者框的边框颜色\n        "actorBorderColor": "#73A6FF",\n        // 定义序列图中参与者名称的文字颜色\n        "actorTextColor": "#333333",\n        // 定义序列图中信号线条的颜色\n        "signalColor": "#73A6FF",\n        // 定义序列图中信号文字的颜色\n        "signalTextColor": "#333333",\n        // 定义甘特图中任务条起始部分的颜色\n        "ganttBarStartColor": "#E5F6FF",\n        // 定义甘特图中任务条结束部分的颜色\n        "ganttBarEndColor": "#73A6FF",\n        // 定义类图中类的背景颜色\n        "classBkg": "#FFFFFF",\n        // 定义类图中类的边框颜色\n        "classBorder": "#000000",\n        // 定义类图中类标题的背景颜色\n        "classTitleBkg": "#E5F6FF",\n        // 定义类图中类标题的文字颜色\n        "classTitleTextColor": "#333333",\n        // 定义类图中类的文字颜色\n        "classTextColor": "#000000",\n        // 定义状态图中状态的背景颜色\n        "stateBkg": "#E5F6FF",\n        // 定义状态图中状态的边框颜色\n        "stateBorder": "#73A6FF",\n        // 定义状态图中状态标题的背景颜色\n        "stateTitleBkg": "#E5F6FF",\n        // 定义状态图中状态标题的文字颜色\n        "stateTitleTextColor": "#333333",\n        // 定义状态图中状态的文字颜色\n        "stateTextColor": "#000000",\n        // 定义 ER 图中实体的背景颜色\n        "entityBkg": "#E5F6FF",\n        // 定义 ER 图中实体的边框颜色\n        "entityBorder": "#73A6FF",\n        // 定义 ER 图中实体标题的背景颜色\n        "entityTitleBkg": "#E5F6FF",\n        // 定义 ER 图中实体标题的文字颜色\n        "entityTitleTextColor": "#333333",\n        // 定义 ER 图中实体的文字颜色\n        "entityTextColor": "#000000",\n        // 定义饼图中切片的颜色\n        "pie1": "#E5F6FF",\n        "pie2": "#73A6FF",\n        "pie3": "#007ACC",\n        "pie4": "#00569E",\n        "pie5": "#A3D0FF",\n        "pie6": "#C2E0FF"\n    },\n    // 流程图相关配置\n    "flowchart": {\n        // 线条弯曲类型\n        // 可选项:\n        // - 'basis' 贝塞尔曲线，平滑的曲线\n        // - 'basisClosed' 闭合的贝塞尔曲线，用于循环\n        // - 'bump' 阶梯曲线，每个节点之间有一个小的跳跃\n        // - 'cardinal' 贝塞尔曲线，允许曲线通过节点\n        // - 'cardinalClosed' 闭合的贝塞尔曲线，允许曲线通过节点\n        // - 'linear' 直线\n        // - 'monotoneX' 单调曲线，确保曲线不会上下波动\n        // - 'monotoneY' 单调曲线，确保曲线不会左右波动\n        // - 'natural' 贝塞尔曲线，曲线尽可能接近直线，但仍然平滑\n        // - 'step' 阶梯线，每个节点之间有一个明显的步骤\n        // - 'stepAfter' 阶梯线，步骤在节点之后\n        // - 'stepBefore' 阶梯线，步骤在节点之前\n        "curve": "linear",\n        // 节点的形状样式\n        // 可选项:\n        // - 'default': 默认形状\n        // - 'round': 圆角形状\n        // - 'ellipse': 椭圆形状\n        // - 'diamond': 菱形形状\n        "shape": "default",\n        // 节点之间的间距\n        "nodeSpacing": 150,\n        // 节点行之间的间距\n        "rankSpacing": 50\n    },\n    // 序列图相关配置\n    "sequence": {\n        // 显示消息编号\n        "showSequenceNumbers": false,\n        // 参与者之间的间隔\n        "actorMargin": 100,\n        // 消息的字体大小\n        "messageFontSize": 14,\n        // 参与者的字体大小\n        "actorFontSize": 14,\n        // 消息的最大宽度，超出该宽度会自动换行\n        "messageMaxWidth": 500,\n        // 参与者框的高度\n        "actorHeight": 65,\n        // 参与者框的宽度\n        "actorWidth": 120,\n        // 激活框的颜色\n        "activationBackground": "#E5F6FF",\n        // 激活框的边框颜色\n        "activationBorder": "#73A6FF"\n    },\n    // 甘特图相关配置\n    "gantt": {\n        // 任务栏的高度\n        "barHeight": 20,\n        // 任务栏之间的间隔\n        "barGap": 4,\n        // 显示的日期格式\n        "dateFormat": "YYYY-MM-DD",\n        // 左侧标签的宽度\n        "leftPadding": 75,\n        // 右侧标签的宽度\n        "rightPadding": 75,\n        // 甘特图的顶部边距\n        "topPadding": 25,\n        // 甘特图的底部边距\n        "bottomPadding": 25,\n        // 甘特图中日期标签的字体大小\n        "tickFontSize": 12,\n        // 甘特图中完成任务的颜色\n        "doneColor": "#73A6FF",\n        // 甘特图中进行中任务的颜色\n        "activeColor": "#E5F6FF",\n        // 甘特图中未开始任务的颜色\n        "todayLineColor": "#000000",\n        // 甘特图中今日线的样式\n        "todayLineStyle": "dashed"\n    },\n    // 控制图表是否使用最大宽度\n    // 可选项:\n    // - true: 图表使用最大宽度\n    // - false: 图表根据内容自适应宽度\n    "useMaxWidth": true,\n    // 控制 Mermaid 的安全级别\n    // 可选项:\n    // - 'strict': 严格模式，仅允许安全的操作\n    // - 'loose': 宽松模式，允许更多的操作\n    "securityLevel": "strict",\n    // 控制 Mermaid 中 Markdown 渲染的行为\n    "markdown": {\n        // 是否启用 Markdown 渲染\n        // 可选项:\n        // - true: 启用 Markdown 渲染，允许在图表中使用 Markdown 语法\n        // - false: 禁用 Markdown 渲染\n        "htmlLabels": true\n    },\n    // 控制 Mermaid 的日志输出级别\n    // 可选项:\n    // - 'debug': 输出详细的调试信息\n    // - 'info': 输出普通信息\n    // - 'warn': 输出警告信息\n    // - 'error': 输出错误信息\n    "logLevel": "info",\n    // 控制页面加载时是否自动渲染 Mermaid 图表\n    "startOnLoad": true,\n    // 控制箭头标记的位置\n    // 可选项:\n    // - true: 箭头标记位置为绝对位置\n    // - false: 箭头标记位置为相对位置\n    "arrowMarkerAbsolute": false,\n    // 类图相关配置\n    "class": {\n        // 类框的圆角半径\n        "borderRadius": 10,\n        // 类框的边框宽度\n        "borderWidth": 2\n    },\n    // 状态图相关配置\n    "state": {\n        // 状态框的背景颜色\n        "fill": "#E5F6FF",\n        // 状态框的边框颜色\n        "stroke": "#73A6FF",\n        // 状态框的边框宽度\n        "strokeWidth": 2\n    },\n    // 实体关系图（ER 图）相关配置\n    "er": {\n        // 实体框的圆角半径\n        "entityBorderRadius": 10,\n        // 实体框的边框宽度\n        "entityBorderWidth": 2,\n        // 关系线的颜色\n        "relationshipLineColor": "#000000",\n        // 关系线的样式\n        "relationshipLineStyle": "solid"\n    },\n    // 饼图相关配置\n    "pie": {\n        // 饼图的起始角度\n        "startAngle": 0,\n        // 饼图是否为实心\n        "solid": false,\n        // 饼图的文字颜色\n        "textColor": "#000000"\n    }\n}`
+
+    const style = `%%引用格式：节点后面加上:::椭圆   其他同理
+classDef 椭圆 rx:50%,ry:50%;
+classDef 角色 fill:#FFFFFF,stroke:#FFFFFF,stroke-width:0,color:#FFFFFF`;
+
+    const menuData = [
+        {
+            type: 'Model',
+            icon: '📦',
+            name: '📦模块图',
+            content: {
+                code: `graph TD\nModel[员工管理系统] --- B[员工端]\nModel --- C[管理员端]\n\nB --- D[个<br>人<br>信<br>息]\nB --- E[工<br>资<br>单<br>ㅤ]\nB --- F[请<br>假<br>ㅤ <br>ㅤ ]\n\nC --- G[用<br>户<br>管<br>理]\nC --- H[数<br>据<br>看<br>板]\nC --- I[工<br>序<br>管<br>理]\nC --- J[部<br>门<br>管<br>理]\nC --- K[工<br>资<br>管<br>理]`,
+                config: `{\n    // 用于设置 Mermaid 图表的主题样式\n    // 可选项及其说明：\n    // - "base": 基础主题，可在此基础上通过 themeVariables 进行定制\n    // - "forest": 森林主题，具有自然风格的配色\n    // - "dark": 黑暗主题，适合深色背景，有较好的对比度\n    // - "default": 默认主题，是 Mermaid 预设的默认外观\n    // - "neutral": 中性主题，配色较为柔和、中立\n    // - "gatsby": Gatsby 风格主题\n    // - "forest-dark": 深色森林主题\n    // - "light": 浅色主题\n    "theme": "base",\n    // 用于自定义主题的各种变量，通过修改这些变量可以改变图表的外观\n    "themeVariables": {\n        // 定义图表的背景颜色\n        "background": "#FFFFFF",\n        // 定义图表中主要元素的颜色，如主要的形状、线条等\n        "primaryColor": "#FFFFFF",\n        // 定义图表中次要元素的颜色，用于区分不同层次的信息\n        "secondaryColor": "#FFFFFF",\n        // 定义图表中三级元素的颜色，进一步细化图表的视觉层次\n        "tertiaryColor": "#FFFFFF",\n        // 定义主要元素的边框颜色\n        "primaryBorderColor": "#000000",\n        // 定义次要元素的边框颜色\n        "secondaryBorderColor": "#000000",\n        // 定义三级元素的边框颜色\n        "tertiaryBorderColor": "#000000",\n        // 定义图表中线条的颜色，如连接线、箭头等\n        "lineColor": "#000000",\n        // 定义图表中文字的颜色\n        "textColor": "#000000",\n        // 定义注释框的背景颜色\n        "noteBkgColor": "#E5F6FF",\n        // 定义注释框内文字的颜色\n        "noteTextColor": "#333333",\n        // 定义注释框的边框颜色\n        "noteBorderColor": "#73A6FF",\n        // 定义序列图中参与者框的背景颜色\n        "actorBkgColor": "#E5F6FF",\n        // 定义序列图中参与者框的边框颜色\n        "actorBorderColor": "#73A6FF",\n        // 定义序列图中参与者名称的文字颜色\n        "actorTextColor": "#333333",\n        // 定义序列图中信号线条的颜色\n        "signalColor": "#73A6FF",\n        // 定义序列图中信号文字的颜色\n        "signalTextColor": "#333333",\n        // 定义甘特图中任务条起始部分的颜色\n        "ganttBarStartColor": "#E5F6FF",\n        // 定义甘特图中任务条结束部分的颜色\n        "ganttBarEndColor": "#73A6FF",\n        // 定义类图中类的背景颜色\n        "classBkg": "#FFFFFF",\n        // 定义类图中类的边框颜色\n        "classBorder": "#000000",\n        // 定义类图中类标题的背景颜色\n        "classTitleBkg": "#E5F6FF",\n        // 定义类图中类标题的文字颜色\n        "classTitleTextColor": "#333333",\n        // 定义类图中类的文字颜色\n        "classTextColor": "#000000",\n        // 定义状态图中状态的背景颜色\n        "stateBkg": "#E5F6FF",\n        // 定义状态图中状态的边框颜色\n        "stateBorder": "#73A6FF",\n        // 定义状态图中状态标题的背景颜色\n        "stateTitleBkg": "#E5F6FF",\n        // 定义状态图中状态标题的文字颜色\n        "stateTitleTextColor": "#333333",\n        // 定义状态图中状态的文字颜色\n        "stateTextColor": "#000000",\n        // 定义 ER 图中实体的背景颜色\n        "entityBkg": "#E5F6FF",\n        // 定义 ER 图中实体的边框颜色\n        "entityBorder": "#73A6FF",\n        // 定义 ER 图中实体标题的背景颜色\n        "entityTitleBkg": "#E5F6FF",\n        // 定义 ER 图中实体标题的文字颜色\n        "entityTitleTextColor": "#333333",\n        // 定义 ER 图中实体的文字颜色\n        "entityTextColor": "#000000",\n        // 定义饼图中切片的颜色\n        "pie1": "#E5F6FF",\n        "pie2": "#73A6FF",\n        "pie3": "#007ACC",\n        "pie4": "#00569E",\n        "pie5": "#A3D0FF",\n        "pie6": "#C2E0FF"\n    },\n    // 流程图相关配置\n    "flowchart": {\n        // 线条弯曲类型\n        // 可选项:\n        // - 'basis' 贝塞尔曲线，平滑的曲线\n        // - 'basisClosed' 闭合的贝塞尔曲线，用于循环\n        // - 'bump' 阶梯曲线，每个节点之间有一个小的跳跃\n        // - 'cardinal' 贝塞尔曲线，允许曲线通过节点\n        // - 'cardinalClosed' 闭合的贝塞尔曲线，允许曲线通过节点\n        // - 'linear' 直线\n        // - 'monotoneX' 单调曲线，确保曲线不会上下波动\n        // - 'monotoneY' 单调曲线，确保曲线不会左右波动\n        // - 'natural' 贝塞尔曲线，曲线尽可能接近直线，但仍然平滑\n        // - 'step' 阶梯线，每个节点之间有一个明显的步骤\n        // - 'stepAfter' 阶梯线，步骤在节点之后\n        // - 'stepBefore' 阶梯线，步骤在节点之前\n        "curve": "linear",\n        // 节点的形状样式\n        // 可选项:\n        // - 'default': 默认形状\n        // - 'round': 圆角形状\n        // - 'ellipse': 椭圆形状\n        // - 'diamond': 菱形形状\n        "shape": "default",\n        // 节点之间的间距\n        "nodeSpacing": 20,\n        // 节点行之间的间距\n        "rankSpacing": 20\n    }\n}`,
+                style: style
+            }
+        },
+        {
+            type: 'Start',
+            icon: '🔚',
+            name: '🔚流程图',
+            content: {
+                code: `flowchart TD\n    Start([开始]) --> Z[登录]\n    Z --> C{JWT过期?}\n    C -->|未过期| D[使用用户功能]\n    C -->|过期| E[清理JWT]\n    D --> O\n    E --> Z\n    Z --> O([结束])`,
+                config: `{\n    // 用于设置 Mermaid 图表的主题样式\n    // 可选项及其说明：\n    // - "base": 基础主题，可在此基础上通过 themeVariables 进行定制\n    // - "forest": 森林主题，具有自然风格的配色\n    // - "dark": 黑暗主题，适合深色背景，有较好的对比度\n    // - "default": 默认主题，是 Mermaid 预设的默认外观\n    // - "neutral": 中性主题，配色较为柔和、中立\n    // - "gatsby": Gatsby 风格主题\n    // - "forest-dark": 深色森林主题\n    // - "light": 浅色主题\n    "theme": "base",\n    // 用于自定义主题的各种变量，通过修改这些变量可以改变图表的外观\n    "themeVariables": {\n        // 定义图表的背景颜色\n        "background": "#FFFFFF",\n        // 定义图表中主要元素的颜色，如主要的形状、线条等\n        "primaryColor": "#FFFFFF",\n        // 定义图表中次要元素的颜色，用于区分不同层次的信息\n        "secondaryColor": "#FFFFFF",\n        // 定义图表中三级元素的颜色，进一步细化图表的视觉层次\n        "tertiaryColor": "#FFFFFF",\n        // 定义主要元素的边框颜色\n        "primaryBorderColor": "#000000",\n        // 定义次要元素的边框颜色\n        "secondaryBorderColor": "#000000",\n        // 定义三级元素的边框颜色\n        "tertiaryBorderColor": "#000000",\n        // 定义图表中线条的颜色，如连接线、箭头等\n        "lineColor": "#000000",\n        // 定义图表中文字的颜色\n        "textColor": "#000000",\n        // 定义注释框的背景颜色\n        "noteBkgColor": "#E5F6FF",\n        // 定义注释框内文字的颜色\n        "noteTextColor": "#333333",\n        // 定义注释框的边框颜色\n        "noteBorderColor": "#73A6FF",\n        // 定义序列图中参与者框的背景颜色\n        "actorBkgColor": "#E5F6FF",\n        // 定义序列图中参与者框的边框颜色\n        "actorBorderColor": "#73A6FF",\n        // 定义序列图中参与者名称的文字颜色\n        "actorTextColor": "#333333",\n        // 定义序列图中信号线条的颜色\n        "signalColor": "#73A6FF",\n        // 定义序列图中信号文字的颜色\n        "signalTextColor": "#333333",\n        // 定义甘特图中任务条起始部分的颜色\n        "ganttBarStartColor": "#E5F6FF",\n        // 定义甘特图中任务条结束部分的颜色\n        "ganttBarEndColor": "#73A6FF",\n        // 定义类图中类的背景颜色\n        "classBkg": "#FFFFFF",\n        // 定义类图中类的边框颜色\n        "classBorder": "#000000",\n        // 定义类图中类标题的背景颜色\n        "classTitleBkg": "#E5F6FF",\n        // 定义类图中类标题的文字颜色\n        "classTitleTextColor": "#333333",\n        // 定义类图中类的文字颜色\n        "classTextColor": "#000000",\n        // 定义状态图中状态的背景颜色\n        "stateBkg": "#E5F6FF",\n        // 定义状态图中状态的边框颜色\n        "stateBorder": "#73A6FF",\n        // 定义状态图中状态标题的背景颜色\n        "stateTitleBkg": "#E5F6FF",\n        // 定义状态图中状态标题的文字颜色\n        "stateTitleTextColor": "#333333",\n        // 定义状态图中状态的文字颜色\n        "stateTextColor": "#000000",\n        // 定义 ER 图中实体的背景颜色\n        "entityBkg": "#E5F6FF",\n        // 定义 ER 图中实体的边框颜色\n        "entityBorder": "#73A6FF",\n        // 定义 ER 图中实体标题的背景颜色\n        "entityTitleBkg": "#E5F6FF",\n        // 定义 ER 图中实体标题的文字颜色\n        "entityTitleTextColor": "#333333",\n        // 定义 ER 图中实体的文字颜色\n        "entityTextColor": "#000000",\n        // 定义饼图中切片的颜色\n        "pie1": "#E5F6FF",\n        "pie2": "#73A6FF",\n        "pie3": "#007ACC",\n        "pie4": "#00569E",\n        "pie5": "#A3D0FF",\n        "pie6": "#C2E0FF"\n    },\n    // 流程图相关配置\n    "flowchart": {\n        // 线条弯曲类型\n        // 可选项:\n        // - 'basis' 贝塞尔曲线，平滑的曲线\n        // - 'basisClosed' 闭合的贝塞尔曲线，用于循环\n        // - 'bump' 阶梯曲线，每个节点之间有一个小的跳跃\n        // - 'cardinal' 贝塞尔曲线，允许曲线通过节点\n        // - 'cardinalClosed' 闭合的贝塞尔曲线，允许曲线通过节点\n        // - 'linear' 直线\n        // - 'monotoneX' 单调曲线，确保曲线不会上下波动\n        // - 'monotoneY' 单调曲线，确保曲线不会左右波动\n        // - 'natural' 贝塞尔曲线，曲线尽可能接近直线，但仍然平滑\n        // - 'step' 阶梯线，每个节点之间有一个明显的步骤\n        // - 'stepAfter' 阶梯线，步骤在节点之后\n        // - 'stepBefore' 阶梯线，步骤在节点之前\n        "curve": "linear",\n        // 节点的形状样式\n        // 可选项:\n        // - 'default': 默认形状\n        // - 'round': 圆角形状\n        // - 'ellipse': 椭圆形状\n        // - 'diamond': 菱形形状\n        "shape": "default",\n        // 节点之间的间距\n        "nodeSpacing": 20,\n        // 节点行之间的间距\n        "rankSpacing": 50\n    }\n}`,
+                style: style
+            }
+        },
+        {
+            type: 'Role(',
+            icon: '👤',
+            name: '👤用例图',
+            content: {
+                code: `graph LR\n%% 找个图片替代那个小人\nRole( ):::角色 --- A1[ㅤ用户认证ㅤ]:::椭圆\nA1 -.-|包含| A11[ㅤ注册登录ㅤ]:::椭圆\nA1 -.-|包含| A13[ㅤ注ㅤㅤ销ㅤ]:::椭圆\nA1 -.-|包含| A14[修改用户信息]:::椭圆\nA1 -.-|包含| A15[ㅤ修改密码ㅤ]:::椭圆\nRole --- A2[ㅤ体征管理ㅤ]:::椭圆`,
+                config: `{\n    // 用于设置 Mermaid 图表的主题样式\n    // 可选项及其说明：\n    // - "base": 基础主题，可在此基础上通过 themeVariables 进行定制\n    // - "forest": 森林主题，具有自然风格的配色\n    // - "dark": 黑暗主题，适合深色背景，有较好的对比度\n    // - "default": 默认主题，是 Mermaid 预设的默认外观\n    // - "neutral": 中性主题，配色较为柔和、中立\n    // - "gatsby": Gatsby 风格主题\n    // - "forest-dark": 深色森林主题\n    // - "light": 浅色主题\n    "theme": "base",\n    // 用于自定义主题的各种变量，通过修改这些变量可以改变图表的外观\n    "themeVariables": {\n        // 定义图表的背景颜色\n        "background": "#FFFFFF",\n        // 定义图表中主要元素的颜色，如主要的形状、线条等\n        "primaryColor": "#FFFFFF",\n        // 定义图表中次要元素的颜色，用于区分不同层次的信息\n        "secondaryColor": "#FFFFFF",\n        // 定义图表中三级元素的颜色，进一步细化图表的视觉层次\n        "tertiaryColor": "#FFFFFF",\n        // 定义主要元素的边框颜色\n        "primaryBorderColor": "#000000",\n        // 定义次要元素的边框颜色\n        "secondaryBorderColor": "#000000",\n        // 定义三级元素的边框颜色\n        "tertiaryBorderColor": "#000000",\n        // 定义图表中线条的颜色，如连接线、箭头等\n        "lineColor": "#000000",\n        // 定义图表中文字的颜色\n        "textColor": "#000000",\n        // 定义注释框的背景颜色\n        "noteBkgColor": "#E5F6FF",\n        // 定义注释框内文字的颜色\n        "noteTextColor": "#333333",\n        // 定义注释框的边框颜色\n        "noteBorderColor": "#73A6FF",\n        // 定义序列图中参与者框的背景颜色\n        "actorBkgColor": "#E5F6FF",\n        // 定义序列图中参与者框的边框颜色\n        "actorBorderColor": "#73A6FF",\n        // 定义序列图中参与者名称的文字颜色\n        "actorTextColor": "#333333",\n        // 定义序列图中信号线条的颜色\n        "signalColor": "#73A6FF",\n        // 定义序列图中信号文字的颜色\n        "signalTextColor": "#333333",\n        // 定义甘特图中任务条起始部分的颜色\n        "ganttBarStartColor": "#E5F6FF",\n        // 定义甘特图中任务条结束部分的颜色\n        "ganttBarEndColor": "#73A6FF",\n        // 定义类图中类的背景颜色\n        "classBkg": "#FFFFFF",\n        // 定义类图中类的边框颜色\n        "classBorder": "#000000",\n        // 定义类图中类标题的背景颜色\n        "classTitleBkg": "#E5F6FF",\n        // 定义类图中类标题的文字颜色\n        "classTitleTextColor": "#333333",\n        // 定义类图中类的文字颜色\n        "classTextColor": "#000000",\n        // 定义状态图中状态的背景颜色\n        "stateBkg": "#E5F6FF",\n        // 定义状态图中状态的边框颜色\n        "stateBorder": "#73A6FF",\n        // 定义状态图中状态标题的背景颜色\n        "stateTitleBkg": "#E5F6FF",\n        // 定义状态图中状态标题的文字颜色\n        "stateTitleTextColor": "#333333",\n        // 定义状态图中状态的文字颜色\n        "stateTextColor": "#000000",\n        // 定义 ER 图中实体的背景颜色\n        "entityBkg": "#E5F6FF",\n        // 定义 ER 图中实体的边框颜色\n        "entityBorder": "#73A6FF",\n        // 定义 ER 图中实体标题的背景颜色\n        "entityTitleBkg": "#E5F6FF",\n        // 定义 ER 图中实体标题的文字颜色\n        "entityTitleTextColor": "#333333",\n        // 定义 ER 图中实体的文字颜色\n        "entityTextColor": "#000000",\n        // 定义饼图中切片的颜色\n        "pie1": "#E5F6FF",\n        "pie2": "#73A6FF",\n        "pie3": "#007ACC",\n        "pie4": "#00569E",\n        "pie5": "#A3D0FF",\n        "pie6": "#C2E0FF"\n    },\n    // 流程图相关配置\n    "flowchart": {\n        // 线条弯曲类型\n        // 可选项:\n        // - 'basis' 贝塞尔曲线，平滑的曲线\n        // - 'basisClosed' 闭合的贝塞尔曲线，用于循环\n        // - 'bump' 阶梯曲线，每个节点之间有一个小的跳跃\n        // - 'cardinal' 贝塞尔曲线，允许曲线通过节点\n        // - 'cardinalClosed' 闭合的贝塞尔曲线，允许曲线通过节点\n        // - 'linear' 直线\n        // - 'monotoneX' 单调曲线，确保曲线不会上下波动\n        // - 'monotoneY' 单调曲线，确保曲线不会左右波动\n        // - 'natural' 贝塞尔曲线，曲线尽可能接近直线，但仍然平滑\n        // - 'step' 阶梯线，每个节点之间有一个明显的步骤\n        // - 'stepAfter' 阶梯线，步骤在节点之后\n        // - 'stepBefore' 阶梯线，步骤在节点之前\n        "curve": "linear",\n        // 节点的形状样式\n        // 可选项:\n        // - 'default': 默认形状\n        // - 'round': 圆角形状\n        // - 'ellipse': 椭圆形状\n        // - 'diamond': 菱形形状\n        "shape": "default",\n        // 节点之间的间距\n        "nodeSpacing": 10,\n        // 节点行之间的间距\n        "rankSpacing": 100\n    }\n}`,
+                style: style
+            }
+        },
+        {
+            type: 'Entity',
+            icon: '🔗',
+            name: '🔗实体属性图',
+            content: {
+                code: `graph TD\nB[管<br>理<br>员]:::椭圆 --- Entity[其他工资]\nC[工<br>资]:::椭圆 --- Entity\nD[备<br>注]:::椭圆 --- Entity`,
+                config: `{\n    // 用于设置 Mermaid 图表的主题样式\n    // 可选项及其说明：\n    // - "base": 基础主题，可在此基础上通过 themeVariables 进行定制\n    // - "forest": 森林主题，具有自然风格的配色\n    // - "dark": 黑暗主题，适合深色背景，有较好的对比度\n    // - "default": 默认主题，是 Mermaid 预设的默认外观\n    // - "neutral": 中性主题，配色较为柔和、中立\n    // - "gatsby": Gatsby 风格主题\n    // - "forest-dark": 深色森林主题\n    // - "light": 浅色主题\n    "theme": "base",\n    // 用于自定义主题的各种变量，通过修改这些变量可以改变图表的外观\n    "themeVariables": {\n        // 定义图表的背景颜色\n        "background": "#FFFFFF",\n        // 定义图表中主要元素的颜色，如主要的形状、线条等\n        "primaryColor": "#FFFFFF",\n        // 定义图表中次要元素的颜色，用于区分不同层次的信息\n        "secondaryColor": "#FFFFFF",\n        // 定义图表中三级元素的颜色，进一步细化图表的视觉层次\n        "tertiaryColor": "#FFFFFF",\n        // 定义主要元素的边框颜色\n        "primaryBorderColor": "#000000",\n        // 定义次要元素的边框颜色\n        "secondaryBorderColor": "#000000",\n        // 定义三级元素的边框颜色\n        "tertiaryBorderColor": "#000000",\n        // 定义图表中线条的颜色，如连接线、箭头等\n        "lineColor": "#000000",\n        // 定义图表中文字的颜色\n        "textColor": "#000000",\n        // 定义注释框的背景颜色\n        "noteBkgColor": "#E5F6FF",\n        // 定义注释框内文字的颜色\n        "noteTextColor": "#333333",\n        // 定义注释框的边框颜色\n        "noteBorderColor": "#73A6FF",\n        // 定义序列图中参与者框的背景颜色\n        "actorBkgColor": "#E5F6FF",\n        // 定义序列图中参与者框的边框颜色\n        "actorBorderColor": "#73A6FF",\n        // 定义序列图中参与者名称的文字颜色\n        "actorTextColor": "#333333",\n        // 定义序列图中信号线条的颜色\n        "signalColor": "#73A6FF",\n        // 定义序列图中信号文字的颜色\n        "signalTextColor": "#333333",\n        // 定义甘特图中任务条起始部分的颜色\n        "ganttBarStartColor": "#E5F6FF",\n        // 定义甘特图中任务条结束部分的颜色\n        "ganttBarEndColor": "#73A6FF",\n        // 定义类图中类的背景颜色\n        "classBkg": "#FFFFFF",\n        // 定义类图中类的边框颜色\n        "classBorder": "#000000",\n        // 定义类图中类标题的背景颜色\n        "classTitleBkg": "#E5F6FF",\n        // 定义类图中类标题的文字颜色\n        "classTitleTextColor": "#333333",\n        // 定义类图中类的文字颜色\n        "classTextColor": "#000000",\n        // 定义状态图中状态的背景颜色\n        "stateBkg": "#E5F6FF",\n        // 定义状态图中状态的边框颜色\n        "stateBorder": "#73A6FF",\n        // 定义状态图中状态标题的背景颜色\n        "stateTitleBkg": "#E5F6FF",\n        // 定义状态图中状态标题的文字颜色\n        "stateTitleTextColor": "#333333",\n        // 定义状态图中状态的文字颜色\n        "stateTextColor": "#000000",\n        // 定义 ER 图中实体的背景颜色\n        "entityBkg": "#E5F6FF",\n        // 定义 ER 图中实体的边框颜色\n        "entityBorder": "#73A6FF",\n        // 定义 ER 图中实体标题的背景颜色\n        "entityTitleBkg": "#E5F6FF",\n        // 定义 ER 图中实体标题的文字颜色\n        "entityTitleTextColor": "#333333",\n        // 定义 ER 图中实体的文字颜色\n        "entityTextColor": "#000000",\n        // 定义饼图中切片的颜色\n        "pie1": "#E5F6FF",\n        "pie2": "#73A6FF",\n        "pie3": "#007ACC",\n        "pie4": "#00569E",\n        "pie5": "#A3D0FF",\n        "pie6": "#C2E0FF"\n    },\n    // 流程图相关配置\n    "flowchart": {\n        // 线条弯曲类型\n        // 可选项:\n        // - 'basis' 贝塞尔曲线，平滑的曲线\n        // - 'basisClosed' 闭合的贝塞尔曲线，用于循环\n        // - 'bump' 阶梯曲线，每个节点之间有一个小的跳跃\n        // - 'cardinal' 贝塞尔曲线，允许曲线通过节点\n        // - 'cardinalClosed' 闭合的贝塞尔曲线，允许曲线通过节点\n        // - 'linear' 直线\n        // - 'monotoneX' 单调曲线，确保曲线不会上下波动\n        // - 'monotoneY' 单调曲线，确保曲线不会左右波动\n        // - 'natural' 贝塞尔曲线，曲线尽可能接近直线，但仍然平滑\n        // - 'step' 阶梯线，每个节点之间有一个明显的步骤\n        // - 'stepAfter' 阶梯线，步骤在节点之后\n        // - 'stepBefore' 阶梯线，步骤在节点之前\n        "curve": "basis",\n        // 节点的形状样式\n        // 可选项:\n        // - 'default': 默认形状\n        // - 'round': 圆角形状\n        // - 'ellipse': 椭圆形状\n        // - 'diamond': 菱形形状\n        "shape": "default",\n        // 节点之间的间距\n        "nodeSpacing": 10,\n        // 节点行之间的间距\n        "rankSpacing": 80\n    }\n}`,
+                style: style
+            }
+        },
+        {
+            type: 'ER',
+            icon: '🟧',
+            name: '🟧ER图',
+            content: {
+                code: `graph TD\nER[请假] ---|N| B1{管理}\nB1 ---|M| A2[管理员]\nA2 ---|M| B2{管理}\nB2 ---|N| A3[部门]\nA2 ---|N| B3{管理}\nB3 ---|M| A4[员工]`,
+                config: cfg,
+                style: style
+            }
+        },
+        {
+            type: 'classDiagram',
+            icon: '📁',
+            name: '📁类图',
+            content: {
+                code: `classDiagram\nclass Animal {\n    +String name\n    +move()\n}\nclass Dog {\n    +String breed\n    +bark()\n}\nAnimal <|-- Dog`,
+                config: cfg,
+                style: style
+            }
+        },
+        {
+            type: 'sequenceDiagram',
+            icon: '⏰',
+            name: '⏰时序图',
+            content: {
+                code: `sequenceDiagram\n    participant 提交者 as 提交者\n    participant 审核员1 as 审核员1\n    participant 审核员2 as 审核员2\n    participant 管理员 as 管理员\n    participant 系统 as 系统\n    \n    提交者->>系统: 提交申请\n    系统->>提交者: 确认提交成功\n    \n    par 并行审核\n        审核员1->>系统: 获取待审核任务\n        系统->>审核员1: 返回申请详情\n        审核员1->>系统: 审核通过\n        系统->>审核员1: 确认审核结果\n\n        and\n\n        审核员2->>系统: 获取待审核任务\n        系统->>审核员2: 返回申请详情\n        审核员2->>系统: 审核驳回\n        系统->>审核员2: 确认审核结果\n    end\n\n    系统->>管理员: 通知审核结果不一致\n    管理员->>系统: 获取申请详情\n    系统->>管理员: 返回申请详情及审核记录\n\n    alt 管理员同意通过\n        管理员->>系统: 最终通过申请\n        系统->>管理员: 确认最终结果\n        系统->>提交者: 通知申请通过\n    else 管理员拒绝\n        管理员->>系统: 最终驳回申请\n        系统-->>管理员: 确认最终结果\n        系统->>提交者: 通知申请驳回\n    end`,
+                config: cfg,
+                style: style
+            }
+        }
+    ];
+</script>
+<script>
+    /**
+     * 侧边栏类，处理图表列表和分类
+     */
+    class Sidebar {
+        constructor(id, options = {}) {
+            this.container = this.createSidebarContainer(id);
+
+            this.options = options;
+            this.charts = [];
+            this.currentChartId = null;
+            this.filteredCharts = [];
+            this.elements = {};
+            this.editorState = null;
+
+            // 初始化元素引用
+            this.initElements();
+
+            // 绑定事件
+            this.bindEvents();
+
+            // 从本地存储加载数据
+            this.loadFromLocalStorage();
+        }
+
+        /**
+         * 创建侧边栏容器
+         * @param {string} id - 容器ID
+         * @returns {HTMLElement} - 创建的侧边栏容器
+         */
+        createSidebarContainer(id) {
+            // 创建侧边栏容器
+            const container = document.getElementById(id);
+            container.className = 'sidebar';
+
+            // 创建侧边栏HTML结构
+            container.innerHTML = `
+                <div class="sidebar-top">
+                    <button id="collapseSidebar" title="收起侧边栏">☰</button>
+                    <div class="action-buttons-group">
+                        <button id="exportData" title="导出数据">↗️</button>
+                        <button id="importData" title="导入数据">↙️</button>
+                        <button id="newChart" title="新建图表">➕</button>
+                    </div>
+                </div>
+                <div class="sidebar-search">
+                    <input type="text" id="searchInput" placeholder="搜索图表..." />
+                </div>
+                <div class="sidebar-content">
+                    <ul id="historyList"></ul>
+                </div>
+        `;
+
+            // 创建展开按钮
+            const expandButton = document.createElement('button');
+            expandButton.id = 'expandSidebar';
+            expandButton.innerHTML = '☰';
+            expandButton.title = '展开侧边栏';
+            expandButton.className = 'expand-sidebar-button';
+            expandButton.style.display = 'none';
+            document.body.appendChild(expandButton);
+
+            return container;
+        }
+
+        /**
+         * 初始化元素引用
+         */
+        initElements() {
+            this.elements = {
+                sidebar: this.container,
+                historyList: this.container.querySelector('#historyList'),
+                searchInput: this.container.querySelector('#searchInput'),
+                collapseSidebar: this.container.querySelector('#collapseSidebar'),
+                expandSidebar: document.getElementById('expandSidebar'),
+                exportData: this.container.querySelector('#exportData'),
+                importData: this.container.querySelector('#importData'),
+                newChart: this.container.querySelector('#newChart'),
+                actionButtonsGroup: this.container.querySelector('.action-buttons-group')
+            };
+        }
+
+        /**
+         * 设置编辑器状态
+         * @param {Object} editorState - 编辑器状态对象
+         */
+        setEditorState(editorState) {
+            this.editorState = editorState;
+        }
+
+        /**
+         * 设置编辑器实例
+         * @param {Object} editors - 编辑器实例对象
+         */
+        setEditors(editors) {
+            this.editors = editors;
+        }
+
+        /**
+         * 绑定事件
+         */
+        bindEvents() {
+            // 侧边栏收起按钮
+            this.elements.collapseSidebar.addEventListener('click', this.collapseSidebar.bind(this));
+
+            // 展开侧边栏按钮
+            if (this.elements.expandSidebar) {
+                this.elements.expandSidebar.addEventListener('click', this.expandSidebar.bind(this));
+            }
+
+            // 搜索输入框
+            this.elements.searchInput.addEventListener('input', this.handleSearch.bind(this));
+
+            // 新建图表按钮
+            this.elements.newChart.addEventListener('click', this.createNewChart.bind(this));
+
+            // 导出数据按钮
+            this.elements.exportData.addEventListener('click', this.exportData.bind(this));
+
+            // 导入数据按钮
+            this.elements.importData.addEventListener('click', this.importData.bind(this));
+        }
+
+        /**
+         * 收起侧边栏
+         */
+        collapseSidebar() {
+            this.elements.sidebar.classList.add('collapsed');
+            this.elements.searchInput.parentElement.style.display = 'none';
+            this.elements.historyList.parentElement.style.display = 'none';
+
+            // 显示展开按钮
+            if (this.elements.expandSidebar) {
+                this.elements.expandSidebar.style.display = 'block';
+            }
+
+            // 触发布局调整事件
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        /**
+         * 展开侧边栏
+         */
+        expandSidebar() {
+            this.elements.sidebar.classList.remove('collapsed');
+            this.elements.searchInput.parentElement.style.display = 'flex';
+            this.elements.historyList.parentElement.style.display = 'block';
+
+            // 隐藏展开按钮
+            if (this.elements.expandSidebar) {
+                this.elements.expandSidebar.style.display = 'none';
+            }
+
+            // 触发布局调整事件
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        /**
+         * 处理搜索
+         */
+        handleSearch() {
+            const searchTerm = this.elements.searchInput.value.toLowerCase();
+            if (searchTerm) {
+                this.filteredCharts = this.charts.filter(chart =>
+                    chart.title.toLowerCase().includes(searchTerm) ||
+                    chart.content.code.toLowerCase().includes(searchTerm)
+                );
+            } else {
+                this.filteredCharts = [...this.charts];
+            }
+            this.renderHistoryList();
+        }
+
+        /**
+         * 创建新图表
+         */
+        createNewChart() {
+            this.showChartTypeDialog();
+        }
+
+        /**
+         * 显示图表类型选择对话框
+         */
+        showChartTypeDialog() {
+            const dialog = document.createElement('div');
+            dialog.className = 'chart-type-dialog';
+            dialog.innerHTML = `
+            <div class="chart-type-dialog-content">
+                <h3>选择图表类型</h3>
+                <div class="chart-type-grid">
+                    ${menuData.map(chart => `
+                        <div class="chart-type-item" data-type="${chart.type}">
+                            <div class="chart-type-icon">${chart.icon}</div>
+                            <div class="chart-type-name">${chart.name}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button id="cancel-chart-type">取消</button>
+            </div>`;
+            document.body.appendChild(dialog);
+
+            dialog.querySelectorAll('.chart-type-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const type = item.getAttribute('data-type');
+                    this.createChartWithType(type);
+                    document.body.removeChild(dialog);
+                });
+            });
+
+            document.getElementById('cancel-chart-type').addEventListener('click', () => {
+                document.body.removeChild(dialog);
+            });
+        }
+
+        /**
+         * 根据类型创建图表
+         * @param {string} type - 图表类型
+         */
+        createChartWithType(type) {
+            const chart = menuData.find(item => item.type === type) || {
+                name: '新图表',
+                content: {
+                    code: `flowchart TD\nStart[新图表] --> End{完成}`,
+                    config: '{}',
+                    style: ''
+                }
+            };
+
+            const newChart = {
+                id: Date.now(),
+                title: `${chart.name} ${this.charts.length + 1}`,
+                content: chart.content,
+                timestamp: new Date().toLocaleString()
+            };
+
+            this.charts.push(newChart);
+            this.saveToLocalStorage();
+            this.renderHistoryList();
+            this.switchChart(newChart.id);
+        }
+
+        /**
+         * 切换到指定图表
+         * @param {number} id - 图表ID
+         */
+        switchChart(id) {
+            this.currentChartId = id;
+            localStorage.setItem('sidebar-switchChart-id', id)
+            const chart = this.charts.find(c => c.id === id);
+            if (chart && this.editorState) {
+                this.editorState.setData(chart.content);
+                this.renderMermaid();
+                this.container.querySelectorAll('.history-item').forEach(item => {
+                    if (parseInt(item.dataset.id) === id) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        /**
+         * 更新当前图表
+         */
+        updateCurrentChart() {
+            const chart = this.charts.find(c => c.id === this.currentChartId);
+            if (chart && this.editorState) {
+                chart.content = this.editorState.getData();
+                chart.timestamp = new Date().toLocaleString();
+                this.saveToLocalStorage();
+                this.renderHistoryList();
+            }
+        }
+
+        /**
+         * 渲染Mermaid图表
+         */
+        renderMermaid() {
+            if (this.options.renderCallback) {
+                this.options.renderCallback();
+            }
+        }
+
+        /**
+         * 渲染历史记录列表
+         */
+        renderHistoryList() {
+            const chartsToRender = this.elements.searchInput.value ? this.filteredCharts : this.charts;
+            this.elements.historyList.innerHTML = chartsToRender.map(chart => {
+                const chartTypeDesc = this.getChartTypeDescription(chart.content.code);
+                return `
+                <li class="history-item ${chart.id === this.currentChartId ? 'active' : ''}" data-id="${chart.id}" onclick="sidebar.switchChart(${chart.id})"
+                title="${chart.title}">
+                    <div class="history-item-title">
+                        <span class="title-text" onclick="sidebar.handleTitleClick(${chart.id}); event.stopPropagation()">${chart.title}</span>
+                        <input type="text" class="title-edit" value="${chart.title}" onblur="sidebar.saveTitleEdit(${chart.id}, this.value)" onkeydown="sidebar.handleTitleKeydown(event, ${chart.id}, this.value)">
+                        <small>${chartTypeDesc}</small>
+                        <br>
+                        <small>${chart.timestamp}</small>
+                    </div>
+                    <button class="delete-chart" onclick="sidebar.startDeleteChart(${chart.id}, event);">❌</button>
+                    <button class="delete-confirm" onclick="sidebar.confirmDeleteChart(${chart.id}, event);">确认</button>
+                </li>`;
+            }).join('');
+        }
+
+        /**
+         * 获取图表类型描述
+         * @param {string} code - 图表代码
+         * @returns {string} - 图表类型描述
+         */
+        getChartTypeDescription(code) {
+            if (!code) return '';
+            for (const chart of menuData) {
+                if (code.includes(chart.type)) {
+                    return chart.name;
+                }
+            }
+            return '';
+        }
+
+        /**
+         * 保存标题编辑
+         * @param {number} id - 图表ID
+         * @param {string} newTitle - 新标题
+         */
+        saveTitleEdit(id, newTitle) {
+            if (newTitle && newTitle.trim()) {
+                const chart = this.charts.find(c => c.id === id);
+                if (chart) {
+                    chart.title = newTitle.trim();
+                    this.saveToLocalStorage();
+                    // 不再调用renderHistoryList()，保持编辑状态
+                    // 只更新当前标题文本的显示
+                    const item = this.container.querySelector(`.history-item[data-id="${id}"]`);
+                    if (item) {
+                        const titleText = item.querySelector('.title-text');
+                        if (titleText) {
+                            titleText.textContent = newTitle.trim();
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * 处理标题编辑时的键盘事件
+         * @param {Event} event - 键盘事件
+         * @param {number} id - 图表ID
+         * @param {string} newTitle - 新标题
+         */
+        handleTitleKeydown(event, id, newTitle) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this.saveTitleEdit(id, newTitle);
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                // 退出编辑模式但保留原标题
+                const item = this.container.querySelector(`.history-item[data-id="${id}"]`);
+                if (item) {
+                    item.classList.remove('editing');
+                    const titleEdit = item.querySelector('.title-edit');
+                    const chart = this.charts.find(c => c.id === id);
+                    if (titleEdit && chart) {
+                        titleEdit.value = chart.title;
+                    }
+                }
+            }
+        }
+
+        /**
+         * 处理标题点击事件
+         * @param {number} id - 图表ID
+         */
+        handleTitleClick(id) {
+            if (id !== this.currentChartId) {
+                this.switchChart(id);
+                return;
+            }
+            const item = this.container.querySelector(`.history-item[data-id="${id}"]`);
+            if (item) {
+                // 无论是否已经处于编辑状态，都保持编辑状态
+                item.classList.add('editing');
+                const titleEdit = item.querySelector('.title-edit');
+                if (titleEdit) {
+                    titleEdit.focus();
+                    titleEdit.selectionStart = titleEdit.selectionEnd = titleEdit.value.length;
+                }
+            }
+        }
+
+        /**
+         * 开始删除图表
+         * @param {number} id - 图表ID
+         * @param {Event} event - 事件对象
+         */
+        startDeleteChart(id, event) {
+            event.stopPropagation();
+
+            this.container.querySelectorAll('.history-item.deleting').forEach(item => {
+                if (parseInt(item.dataset.id) !== id) {
+                    item.classList.remove('deleting');
+                }
+            });
+            const item = this.container.querySelector(`.history-item[data-id="${id}"]`);
+            if (item) {
+                item.classList.toggle('deleting');
+            }
+            document.addEventListener('click', (e) => {
+                const clickedItem = e.target.closest('.history-item');
+                const clickedId = clickedItem ? parseInt(clickedItem.dataset.id) : null;
+
+                if (clickedId !== id || !e.target.closest('.delete-chart, .delete-confirm')) {
+                    const item = this.container.querySelector(`.history-item[data-id="${id}"]`);
+                    if (item) {
+                        item.classList.remove('deleting');
+                    }
+                }
+            });
+        }
+
+        /**
+         * 确认删除图表
+         * @param {number} id - 图表ID
+         * @param {Event} event - 事件对象
+         */
+        confirmDeleteChart(id, event) {
+            event.stopPropagation();
+            this.deleteChart(id);
+        }
+
+        /**
+         * 删除图表
+         * @param {number} id - 图表ID
+         */
+        deleteChart(id) {
+            const index = this.charts.findIndex(c => c.id === id);
+            if (index !== -1) {
+                this.charts.splice(index, 1);
+                this.saveToLocalStorage();
+                if (this.charts.length > 0) {
+                    if (id === this.currentChartId) {
+                        this.switchChart(this.charts[0].id);
+                    }
+                } else {
+                    this.showChartTypeDialog();
+                }
+                this.renderHistoryList();
+            }
+        }
+
+        /**
+         * 保存到本地存储
+         */
+        saveToLocalStorage() {
+            localStorage.setItem('mermaidCharts2', JSON.stringify(this.charts, null, 4));
+        }
+
+        /**
+         * 从本地存储加载数据
+         */
+        loadFromLocalStorage() {
+            const data = localStorage.getItem('mermaidCharts2');
+            if (data) {
+                this.charts = JSON.parse(data);
+                this.filteredCharts = [...this.charts];
+                if (this.charts.length > 0 && this.editorState) {
+                    this.switchChart(this.charts[0].id);
+                }
+            }
+        }
+
+        /**
+         * 导出数据
+         */
+        exportData() {
+            const data = JSON.stringify(this.charts);
+            const blob = new Blob([data], {
+                type: 'application/json'
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const dateTimeString = `${year}年${month}月${day}日${hours}时${minutes}分${seconds}秒`;
+            link.download = `mermaid charts.${dateTimeString}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * 导入数据
+         */
+        importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            this.charts = JSON.parse(e.target.result);
+                            this.saveToLocalStorage();
+                            this.renderHistoryList();
+                            if (this.charts.length > 0) {
+                                this.switchChart(this.charts[0].id);
+                            }
+                        } catch (err) {
+                            this.showToast('导入数据失败，请检查文件格式');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        /**
+         * 显示提示信息
+         * @param {string} message - 提示信息
+         * @param {number} duration - 显示时长（毫秒）
+         */
+        showToast(message, duration = 2000) {
+            const toastHTML = `<div style="position: fixed;bottom: 20px;left: 50%;transform: translateX(-50%);background-color: rgba(0, 0, 0, 0.8);color: #fff;padding: 10px 20px;border-radius: 5px;z-index: 1000;">${message}</div>`;
+            document.body.insertAdjacentHTML('beforeend', toastHTML);
+            const toast = document.body.lastChild;
+            setTimeout(() => document.body.removeChild(toast), duration);
+        }
+    }
+</script>
+<script>
+    /**
+     * 联合代码编辑器类
+     * 整合代码、配置和样式编辑器的功能
+     */
+    class UnifiedEditor {
+        /**
+         * 创建联合代码编辑器
+         * @param {string} containerId - 编辑器容器的ID
+         * @param {Object} onChange - 编辑器配置选项
+         */
+        constructor(containerId, onChange = () => {
+        }) {
+            this.containerId = containerId;
+            this.onChange = onChange
+
+            this.editors = {};
+            this.editorState = this._createEditorState();
+
+            this._initContainer();
+            this._initEditors();
+            this._bindEvents();
+        }
+
+        /**
+         * 初始化编辑器容器
+         */
+        _initContainer() {
+            this.container = document.getElementById(this.containerId);
+            this.container.className = "unified-editor"
+            this.container.innerHTML = `
+                    <div class="editor-header">
+                        <div class="editor-tabs">
+                            <button class="editor-tab active" data-type="code"><span>📝 代码</span></button>
+                            <button class="editor-tab" data-type="config"><span>⚙️ 配置</span></button>
+                            <button class="editor-tab" data-type="style"><span>🎨 样式</span></button>
+                        </div>
+                        <button class="layout-button" id="toggle-layout" title=""><span>↕️ 上下布局</span></button>
+                    </div>
+                    <div class="editor-content">
+                        <div id="${this.containerId}-code-editor" class="code-container active"></div>
+                        <div id="${this.containerId}-config-editor" class="code-container"></div>
+                        <div id="${this.containerId}-style-editor" class="code-container"></div>
+                    </div>`
+        }
+
+        /**
+         * 初始化编辑器实例
+         */
+        _initEditors() {
+            this.editors = {
+                code: CodeMirror(document.getElementById(`${this.containerId}-code-editor`), {
+                    mode: 'mermaid',
+                    lineNumbers: true,
+                    value: '',
+                    theme: 'default',
+                    lineWrapping: true,
+                    matchBrackets: true,
+                    autoCloseBrackets: true
+                }),
+                config: CodeMirror(document.getElementById(`${this.containerId}-config-editor`), {
+                    mode: {
+                        name: "javascript",
+                        json: true
+                    },
+                    lineNumbers: true,
+                    value: '',
+                    gutters: ["CodeMirror-lint-markers"]
+                }),
+                style: CodeMirror(document.getElementById(`${this.containerId}-style-editor`), {
+                    mode: 'css',
+                    lineNumbers: true,
+                    value: '',
+                    autoCloseBrackets: true
+                })
+            };
+        }
+
+        /**
+         * 创建编辑器状态管理对象
+         */
+        _createEditorState() {
+            return {
+                getData: () => ({
+                    code: this.editors.code.getValue() || '',
+                    config: this.editors.config.getValue() || '',
+                    style: this.editors.style.getValue() || '',
+                }),
+                getText: () => {
+                    const w = this.editors.code.getValue();
+                    if (w.includes('class') || w.includes('sequence')) {
+                        return w;
+                    } else {
+                        let text = '';
+                        const codes = w.split('\n');
+
+                        if (codes.length > 1) {
+                            text = `${codes[0]}\n%%%%style\n${this.editors.style.getValue()}\n%%%%style\n${codes.slice(1).join('\n')}`;
+                        }
+                        return `%%%%{init: ${this._getJson(this.editors.config.getValue())}}%%%%\n%%%%code\n${text}`;
+                    }
+                },
+                setData: data => {
+                    // 创建新的编辑器实例，以确保操作历史不共用
+                    if (data.style !== undefined) {
+                        const styleValue = data.style || '';
+                        const styleCursor = this.editors.style.getCursor();
+                        const styleContainer = document.getElementById(`${this.containerId}-style-editor`);
+                        styleContainer.innerHTML = '';
+                        this.editors.style = CodeMirror(styleContainer, {
+                            mode: 'css',
+                            lineNumbers: true,
+                            value: styleValue,
+                            autoCloseBrackets: true
+                        });
+                        // 绑定change事件
+                        this.editors.style.on('change', cm => {
+                            if (typeof this.onChange === 'function') {
+                                this.onChange(this.editorState);
+                            }
+                        });
+                        // 尝试恢复光标位置
+                        try {
+                            this.editors.style.setCursor(styleCursor);
+                        } catch (e) {
+                        }
+                    }
+
+                    if (data.code !== undefined) {
+                        const codeValue = data.code || '';
+                        const codeCursor = this.editors.code.getCursor();
+                        const codeContainer = document.getElementById(`${this.containerId}-code-editor`);
+                        codeContainer.innerHTML = '';
+                        this.editors.code = CodeMirror(codeContainer, {
+                            mode: 'mermaid',
+                            lineNumbers: true,
+                            value: codeValue,
+                            theme: 'default',
+                            lineWrapping: true,
+                            matchBrackets: true,
+                            autoCloseBrackets: true
+                        });
+                        // 绑定change事件
+                        this.editors.code.on('change', cm => {
+                            if (typeof this.onChange === 'function') {
+                                this.onChange(this.editorState);
+                            }
+                        });
+                        // 尝试恢复光标位置
+                        try {
+                            this.editors.code.setCursor(codeCursor);
+                        } catch (e) {
+                        }
+                    }
+
+                    if (data.config !== undefined) {
+                        const configValue = data.config || '';
+                        const configCursor = this.editors.config.getCursor();
+                        const configContainer = document.getElementById(`${this.containerId}-config-editor`);
+                        configContainer.innerHTML = '';
+                        this.editors.config = CodeMirror(configContainer, {
+                            mode: {
+                                name: "javascript",
+                                json: true
+                            },
+                            lineNumbers: true,
+                            value: configValue,
+                            gutters: ["CodeMirror-lint-markers"]
+                        });
+                        // 绑定change事件
+                        this.editors.config.on('change', cm => {
+                            if (typeof this.onChange === 'function') {
+                                this.onChange(this.editorState);
+                            }
+                        });
+                        // 尝试恢复光标位置
+                        try {
+                            this.editors.config.setCursor(configCursor);
+                        } catch (e) {
+                        }
+                    }
+
+                    setTimeout(() => {
+                        this.editors.config.refresh();
+                        this.editors.style.refresh();
+                        this.editors.code.refresh();
+                    }, 1);
+                },
+            };
+        }
+
+        /**
+         * 处理JSON字符串
+         */
+        _getJson(json) {
+            if (json === '') return '{}';
+            return json
+                .replace(/\/\/.*$/mg, '')
+                .replace(/\/\*[\s\S]*?\*\//g, '');
+        }
+
+        /**
+         * 绑定事件
+         */
+        _bindEvents() {
+            // 标签切换逻辑
+            this.container.querySelectorAll('.editor-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const type = tab.dataset.type;
+
+                    // 更新标签状态
+                    this.container.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    // 切换编辑器
+                    this.container.querySelectorAll('.code-container').forEach(container => {
+                        container.classList.remove('active');
+                    });
+                    document.getElementById(`${this.containerId}-${type}-editor`).classList.add('active');
+                    this.editors[type].refresh();
+                });
+            });
+
+            // 布局切换逻辑
+            const toggleButton = this.container.querySelector('#toggle-layout');
+            let isVertical = localStorage.getItem('unified-editor-toggle') === '1'; // 默认上下布局
+
+            // 初始化布局
+            const layout = isVertical ? 'vertical' : 'horizontal';
+            const contentWrapper = document.querySelector('.content-wrapper');
+            contentWrapper.classList.remove('vertical-layout', 'horizontal-layout');
+            contentWrapper.classList.add(`${layout}-layout`);
+            toggleButton.innerHTML = isVertical ? '<span>↕️ 上下布局</span>' : '<span>↔️ 左右布局</span>';
+
+            toggleButton.addEventListener('click', () => {
+                isVertical = !isVertical;
+                localStorage.setItem('unified-editor-toggle', isVertical ? '1' : '0');
+                const newLayout = isVertical ? 'vertical' : 'horizontal';
+
+                // 更新按钮图标
+                toggleButton.innerHTML = isVertical ? '<span>↕️ 上下布局</span>' : '<span>↔️ 左右布局</span>';
+
+                // 切换布局
+                contentWrapper.classList.remove('vertical-layout', 'horizontal-layout');
+                contentWrapper.classList.add(`${newLayout}-layout`);
+
+                // 刷新编辑器
+                setTimeout(() => {
+                    Object.values(this.editors).forEach(editor => editor.refresh());
+                }, 100);
+            });
+
+            // 编辑器内容变化事件
+            Object.keys(this.editors).forEach(editorType => {
+                this.editors[editorType].on('change', cm => {
+                    if (typeof this.onChange === 'function') {
+                        this.onChange(this.editorState);
+                    }
+                });
+            });
+
+            // 窗口大小适配
+            window.addEventListener('resize', () => {
+                Object.values(this.editors).forEach(editor => editor.refresh());
+            });
+        }
+
+        /**
+         * 获取编辑器实例
+         * @returns {Object} 编辑器实例对象
+         */
+        getEditors() {
+            return this.editors;
+        }
+
+        /**
+         * 获取编辑器状态
+         * @returns {Object} 编辑器状态对象
+         */
+        getEditorState() {
+            return this.editorState;
+        }
+
+        /**
+         * 获取合并后的文本内容
+         * @returns {string} 合并后的文本
+         */
+        getText() {
+            return this.editorState.getText();
+        }
+    }
+</script>
+<script>
+    /**
+     * 图表查看器类
+     * 封装预览、缩放、拖动、复制和下载图片功能
+     */
+    class Viewer {
+        /**
+         * 创建图表查看器
+         * @param {string} containerId - 查看器容器的ID
+         * @param {Object} options - 查看器配置选项
+         */
+        constructor(containerId, options = {}) {
+            this.containerId = containerId;
+            this.options = options;
+            this.elements = {};
+
+            // 初始化变量
+            this.scale = 1; // 缩放比例
+            this.translateX = 0; // X轴平移距离
+            this.translateY = 0; // Y轴平移距离
+            this.isDragging = false; // 是否正在拖动
+            this.lastMouseX = 0; // 上一次鼠标X坐标
+            this.lastMouseY = 0; // 上一次鼠标Y坐标
+            this.minScale = 0.01; // 最小缩放比例
+            this.maxScale = 100; // 最大缩放比例
+            this.defScale = 1.0; // 默认缩放比例
+            this.fillScale = 2.0; // 填充缩放比例
+            this.touchSlop = 3; // 触摸滑动阈值
+            this.isScaling = false; // 是否在缩放中
+            this.bgindex = parseInt(localStorage.getItem('mermaid-viewer-bgindex', '1')) || 1;
+            this.isFullscreen = false;
+            this.originalStyles = null;
+            this.lastSuccessfulSvg = null;
+            this.isBackgroundPopupVisible = false; // 背景选择弹窗状态
+
+            this._initContainer();
+            this._bindEvents();
+
+            // 显示初始缩放信息
+            this.updateScaleInfo();
+            setTimeout(() => this.showStatusTip(''), 2000);
+            this._applyBackground(this.bgindex);
+        }
+
+        /**
+         * 初始化查看器容器
+         */
+        _initContainer() {
+            this.container = document.getElementById(this.containerId);
+            if (!this.container) {
+                console.error(`无法找到ID为${this.containerId}的容器元素`);
+                return;
+            }
+
+            this.container.classList.add('preview-container');
+
+            // 使用字符串模板创建DOM元素
+            this.container.innerHTML = `
+            <div class="action-buttons">
+                <button id="${this.containerId}-toggleBackground" class="action-button" title="切换背景"><span>🖼️ 背景</span></button>
+                <button id="${this.containerId}-zoomIn" class="action-button" title="放大">➕</button>
+                <button id="${this.containerId}-zoomOut" class="action-button" title="缩小">➖</button>
+                <button id="${this.containerId}-fullscreen" class="action-button" title="全屏"><span>🔲</span></button>
+                <button id="${this.containerId}-copyImage" class="action-button2" title="复制图片"><span>📋 复制</span></button>
+                <button id="${this.containerId}-downloadImage" class="action-button2" title="下载图片"><span>⬇️ 下载</span></button>
+            </div>
+            <div id="${this.containerId}-preview" class="preview-area grid-background${this.bgindex}">
+                <div class="image-container"></div>
+            </div>
+            <div class="status-tip"></div>
+            <div id="${this.containerId}-background-popup" class="background-popup" style="display: none;">
+                <div class="background-grid"></div>
+            </div>
+        `;
+
+            this.elements = {
+                preview: this.container.querySelector(`#${this.containerId}-preview`),
+                imageContainer: this.container.querySelector('.image-container'),
+                downloadImage: this.container.querySelector(`#${this.containerId}-downloadImage`),
+                copyImage: this.container.querySelector(`#${this.containerId}-copyImage`),
+                toggleBackground: this.container.querySelector(`#${this.containerId}-toggleBackground`),
+                zoomIn: this.container.querySelector(`#${this.containerId}-zoomIn`),
+                zoomOut: this.container.querySelector(`#${this.containerId}-zoomOut`),
+                fullscreen: this.container.querySelector(`#${this.containerId}-fullscreen`),
+                actionButtons: this.container.querySelector('.action-buttons'),
+                statusTip: this.container.querySelector('.status-tip'),
+                backgroundPopup: this.container.querySelector(`#${this.containerId}-background-popup`),
+                backgroundGrid: this.container.querySelector('.background-grid')
+            };
+
+            // 生成背景预览网格
+            this._generateBackgroundPreviews();
+        }
+
+        /**
+         * 生成背景预览网格
+         */
+        _generateBackgroundPreviews() {
+            let html = '';
+            for (let i = 0; i <= 40; i++) {
+                const selected = i === this.bgindex ? ' selected' : '';
+                html += `<div class="background-preview grid-background${i}${selected}" data-bg="${i}"></div>`;
+            }
+            this.elements.backgroundGrid.innerHTML = html;
+        }
+
+        /**
+         * 绑定事件
+         */
+        _bindEvents() {
+            // 按钮事件
+            this.elements.downloadImage.addEventListener('click', () => this.processImage('download'));
+            this.elements.copyImage.addEventListener('click', () => this.processImage('copy'));
+            this.elements.toggleBackground.addEventListener('click', () => this.toggleBackgroundPopup());
+            this.elements.zoomIn.addEventListener('click', () => this.zoom(1.2));
+            this.elements.zoomOut.addEventListener('click', () => this.zoom(0.8));
+            this.elements.fullscreen.addEventListener('click', () => this.toggleFullscreen());
+
+            // 背景选择事件
+            this.elements.backgroundGrid.addEventListener('click', (e) => {
+                const preview = e.target.closest('.background-preview');
+                if (preview) {
+                    const bgIndex = parseInt(preview.dataset.bg);
+                    this._applyBackground(bgIndex);
+                    this.setBackgroundPopupVisibility(false);
+
+                    // 存储用户选择的背景索引
+                    localStorage.setItem('mermaid-viewer-bgindex', bgIndex);
+
+                    // 更新选中状态
+                    document.querySelectorAll('.background-preview').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    preview.classList.add('selected');
+                }
+            });
+
+            // 点击背景弹窗外部关闭弹窗
+            document.addEventListener('click', (e) => {
+                if (this.isBackgroundPopupVisible &&
+                    !e.target.closest('.background-popup') &&
+                    !e.target.closest(`#${this.containerId}-toggleBackground`)) {
+                    this.setBackgroundPopupVisibility(false);
+                }
+            });
+
+            // 鼠标移入移出事件，控制按钮显示
+            this.container.addEventListener('mouseenter', () => this.elements.actionButtons.style.opacity = '1');
+            this.container.addEventListener('mouseleave', () => this.elements.actionButtons.style.opacity = '0');
+
+            // 基本事件处理
+            this.elements.preview.addEventListener('wheel', this.handleWheel.bind(this), {passive: false});
+            this.elements.preview.addEventListener('mousedown', this.handleMouseDown.bind(this));
+            window.addEventListener('mousemove', this.handleMouseMove.bind(this));
+            window.addEventListener('mouseup', this.handleMouseUp.bind(this));
+            this.elements.preview.addEventListener('dblclick', this.handleDoubleTap.bind(this));
+
+            // 窗口大小改变事件处理
+            const handleResize = () => {
+                this.calculateFillScale();
+
+                if (Math.abs(this.scale - this.defScale) < 0.01) {
+                    this.centerImage();
+                } else {
+                    this.checkBorderWhenDrag();
+                    this.updateTransform();
+                }
+            };
+
+            // 使用ResizeObserver监视容器大小变化
+            const resizeObserver = new ResizeObserver(handleResize);
+            resizeObserver.observe(this.elements.preview);
+
+            // 窗口大小变化时也调整
+            window.addEventListener('resize', handleResize);
+
+            // 监听ESC键退出全屏或关闭弹窗
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (this.isFullscreen) {
+                        this.toggleFullscreen();
+                    } else if (this.isBackgroundPopupVisible) {
+                        this.setBackgroundPopupVisibility(false);
+                    }
+                }
+            });
+        }
+
+        /**
+         * 应用选择的背景
+         * @param {number} index - 背景索引
+         */
+        _applyBackground(index) {
+            // 移除当前背景类
+            for (let i = 0; i <= 40; i++) {
+                this.elements.preview.classList.remove(`grid-background${i}`);
+            }
+
+            // 应用新背景
+            this.elements.preview.classList.add(`grid-background${index}`);
+            this.bgindex = index;
+
+            // 显示提示
+            this.showStatusTip(`背景已更新`);
+        }
+
+        /**
+         * 切换UI元素的显示状态
+         * @param {HTMLElement} element - 要切换的DOM元素
+         * @param {boolean} state - 是否显示，未指定则切换当前状态
+         * @param {Function} callback - 显示后的回调函数
+         * @returns {boolean} 当前显示状态
+         */
+        toggleElementVisibility(element, state, callback) {
+            if (typeof state !== 'boolean') {
+                state = element.style.display === 'none';
+            }
+
+            element.style.display = state ? 'block' : 'none';
+
+            if (state && callback) {
+                callback();
+            }
+
+            return state;
+        }
+
+        /**
+         * 打开或关闭背景选择弹窗
+         * @param {boolean} isOpen - true表示打开，false表示关闭
+         */
+        setBackgroundPopupVisibility(isOpen) {
+            const updateSelection = isOpen ? () => {
+                document.querySelectorAll('.background-preview').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.querySelector(`.background-preview[data-bg="${this.bgindex}"]`).classList.add('selected');
+            } : null;
+
+            this.isBackgroundPopupVisible = this.toggleElementVisibility(
+                this.elements.backgroundPopup,
+                isOpen,
+                updateSelection
+            );
+        }
+
+        /**
+         * 切换背景选择弹窗
+         */
+        toggleBackgroundPopup() {
+            this.setBackgroundPopupVisibility(!this.isBackgroundPopupVisible);
+        }
+
+        /**
+         * 缩放到指定倍率
+         * @param {number} scaleFactor - 缩放因子(>1放大，<1缩小)
+         * @param {string} statusMessage - 状态提示消息
+         * @param {Object} center - 缩放中心，默认为视图中心
+         */
+        zoom(scaleFactor, center) {
+            if (!center) {
+                const rect = this.elements.preview.getBoundingClientRect();
+                center = {
+                    x: rect.width / 2,
+                    y: rect.height / 2
+                };
+            }
+
+            this.scaleAtPoint(center.x, center.y, scaleFactor);
+
+            updateScaleInfo();
+        }
+
+        /**
+         * 居中图片
+         * @param {boolean} resetScale - 是否重置缩放比例为默认值
+         */
+        centerImage(resetScale = false) {
+            const svgElement = this.elements.imageContainer.querySelector('svg');
+            if (!svgElement) return;
+
+            const rect = this.elements.preview.getBoundingClientRect();
+
+            // 如果需要重置缩放比例
+            if (resetScale) {
+                this.scale = this.defScale;
+            }
+
+            // 获取SVG原始尺寸
+            const originalWidth = svgElement.getBoundingClientRect().width / this.scale;
+            const originalHeight = svgElement.getBoundingClientRect().height / this.scale;
+
+            // 计算缩放后的宽高
+            const scaledWidth = originalWidth * this.scale;
+            const scaledHeight = originalHeight * this.scale;
+
+            // 计算居中位置
+            this.translateX = Math.max(0, (rect.width - scaledWidth) / 2);
+            this.translateY = Math.max(0, (rect.height - scaledHeight) / 2);
+
+            // 更新变换
+            this.updateTransform();
+            this.updateScaleInfo();
+        }
+
+        /**
+         * 重置到默认视图
+         */
+        resetToDefaultView() {
+            // 设置回默认缩放比例并居中图片
+            this.centerImage(true);
+            this.showStatusTip('已重置视图');
+            this.isScaling = false;
+        }
+
+        /**
+         * 更新变换
+         */
+        updateTransform() {
+            this.elements.imageContainer.style.transform = `translate(${this.translateX}px, ${this.translateY}px) scale(${this.scale})`;
+            this.elements.imageContainer.style.transformOrigin = '0 0';
+        }
+
+        /**
+         * 设置图片内容
+         * @param {string} imageContent - SVG图片内容
+         */
+        setImageContent(imageContent) {
+            if (!imageContent || typeof imageContent !== 'string') {
+                this.setErrorState(true);
+                return;
+            }
+
+            // 重置错误状态
+            this.setErrorState(false);
+
+            // 存储成功渲染的SVG
+            this.lastSuccessfulSvg = imageContent;
+            this.svg = imageContent;
+
+            // 设置图片内容
+            this.elements.imageContainer.innerHTML = imageContent;
+
+            // 获取SVG元素
+            const svgElement = this.elements.imageContainer.querySelector('svg');
+            if (!svgElement) {
+                this.setErrorState(true);
+                return;
+            }
+
+            // 设置SVG样式
+            svgElement.setAttribute('width', '100%');
+            svgElement.setAttribute('height', '100%');
+            svgElement.style.padding = '10px';
+            svgElement.style.boxSizing = 'border-box';
+            svgElement.style.maxWidth = 'none';
+            svgElement.style.maxHeight = 'none';
+
+            // 计算填充缩放比例并重置视图
+            this.calculateFillScale();
+            this.scale = this.defScale;
+            this.centerImage();
+        }
+
+        /**
+         * 设置错误状态
+         * @param {boolean} isError - 是否为错误状态
+         * @param {string} errorMessage - 错误消息
+         */
+        setErrorState(isError, errorMessage = '图片格式错误') {
+            if (isError) {
+                // 错误状态，不改变图片，只在左上角显示错误信息
+                this.showErrorMessage(errorMessage);
+            } else {
+                // 正常状态，恢复图片显示
+                this.elements.imageContainer.style.filter = 'none';
+                this.showStatusTip('');
+            }
+        }
+
+        /**
+         * 更新缩放信息显示
+         */
+        updateScaleInfo() {
+            this.showStatusTip(`缩放： ${Math.round(this.scale * 100)}%`)
+        }
+
+        /**
+         * 显示状态提示
+         * @param {string} message - 提示信息
+         * @param {string} type - 提示类型（可选，默认为'info'）
+         * @param {number} duration - 显示时长（毫秒），0表示不自动隐藏
+         */
+        showStatusTip(message, type = 'info', duration = 2000) {
+            // 设置提示信息
+            this.elements.statusTip.textContent = message;
+
+            // 根据类型设置样式
+            this.elements.statusTip.className = type === 'error' ? 'status-tip error' : 'status-tip';
+
+            // 显示提示
+            this.elements.statusTip.style.opacity = message ? '1' : '0';
+
+            // 设置定时器，自动隐藏提示（除非是错误提示或指定不自动隐藏）
+            if (type !== 'error' && duration > 0 && message) {
+                clearTimeout(this.statusTipTimer);
+                this.statusTipTimer = setTimeout(() => {
+                    this.elements.statusTip.style.opacity = '0';
+                }, duration);
+            }
+        }
+
+        /**
+         * 显示错误信息
+         * @param {string} message - 错误信息
+         */
+        showErrorMessage(message) {
+            // 显示错误信息到左上角
+            this.showStatusTip(`语法错误: ${message}`, 'error', 0);
+        }
+
+        /**
+         * 将SVG转换为图片
+         * @param {number} scale - 缩放比例
+         * @returns {Promise<HTMLCanvasElement>} 画布元素
+         */
+        svgToImage(scale = 6) {
+            return new Promise((resolve, reject) => {
+                if (!this.svg) {
+                    reject(new Error('没有可用的SVG内容'));
+                    return;
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(this.svg, 'image/svg+xml');
+                const svgElement = doc.documentElement;
+
+                const svgData = new XMLSerializer().serializeToString(svgElement);
+                const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width * scale;
+                    canvas.height = img.height * scale;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    resolve(canvas);
+                };
+                img.onerror = reject;
+                img.src = svgUrl;
+            });
+        }
+
+        /**
+         * 渲染Mermaid图表
+         * @param {string} text - 图表代码
+         */
+        async renderMermaid(text) {
+            setTimeout(async () => {
+                try {
+                    const {svg} = await mermaid.mermaidAPI.render('mermaid', text);
+                    // 成功渲染，更新图表
+                    this.lastSuccessfulSvg = svg;
+                    this.setImageContent(svg);
+                    this.setErrorState(false);
+
+                    // 回调通知
+                    if (this.options.onRender && typeof this.options.onRender === 'function') {
+                        this.options.onRender();
+                    }
+                } catch (err) {
+                    // 发生错误时显示错误信息
+                    this.showErrorMessage(err.message);
+
+                    // 如果有上一次成功的渲染结果，则显示它
+                    if (this.lastSuccessfulSvg) {
+                        this.elements.imageContainer.innerHTML = this.lastSuccessfulSvg;
+                        this.elements.imageContainer.style.filter = 'grayscale(70%) opacity(0.7)';
+                    }
+
+                }
+            }, 100);
+        }
+
+        /**
+         * 处理滚轮事件
+         * @param {WheelEvent} event - 滚轮事件对象
+         */
+        handleWheel(event) {
+            event.preventDefault();
+
+            // 获取鼠标位置
+            const rect = this.elements.preview.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            // 计算缩放因子
+            const scaleFactor = event.deltaY < 0 ? 1.1 : 0.9;
+
+            // 在鼠标位置进行缩放
+            this.scaleAtPoint(mouseX, mouseY, scaleFactor);
+        }
+
+        /**
+         * 在指定点进行缩放
+         * @param {number} x - 缩放中心X坐标
+         * @param {number} y - 缩放中心Y坐标
+         * @param {number} scaleFactor - 缩放因子
+         */
+        scaleAtPoint(x, y, scaleFactor) {
+            // 计算新缩放比例
+            const newScale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * scaleFactor));
+
+            // 如果缩放比例未变，则不执行
+            if (Math.abs(newScale - this.scale) < 0.001) return;
+
+            // 计算缩放中心相对于当前位移的坐标
+            const dx = x - this.translateX;
+            const dy = y - this.translateY;
+
+            // 计算新的位移坐标
+            const scaleRatio = newScale / this.scale;
+            const newTranslateX = this.translateX + dx - dx * scaleRatio;
+            const newTranslateY = this.translateY + dy - dy * scaleRatio;
+
+            // 更新状态
+            this.scale = newScale;
+            this.translateX = newTranslateX;
+            this.translateY = newTranslateY;
+
+            // 更新变换
+            this.updateTransform();
+            this.updateScaleInfo();
+        }
+
+        /**
+         * 处理鼠标按下事件
+         * @param {MouseEvent} event - 鼠标事件对象
+         */
+        handleMouseDown(event) {
+            if (event.button !== 0) return; // 只响应左键
+
+            // 设置拖动状态
+            this.isDragging = true;
+
+            // 记录鼠标位置
+            this.lastMouseX = event.clientX;
+            this.lastMouseY = event.clientY;
+
+            // 阻止默认行为和事件冒泡
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        /**
+         * 处理鼠标移动事件
+         * @param {MouseEvent} event - 鼠标事件对象
+         */
+        handleMouseMove(event) {
+            if (!this.isDragging) return;
+
+            // 计算鼠标移动距离
+            const deltaX = event.clientX - this.lastMouseX;
+            const deltaY = event.clientY - this.lastMouseY;
+
+            // 如果移动距离大于触摸滑动阈值，则执行拖动
+            if (Math.sqrt(deltaX * deltaX + deltaY * deltaY) > this.touchSlop) {
+                // 更新位移
+                this.translateX += deltaX;
+                this.translateY += deltaY;
+
+                // 检查边界
+                this.checkBorderWhenDrag();
+
+                // 更新变换
+                this.updateTransform();
+
+                // 更新鼠标位置
+                this.lastMouseX = event.clientX;
+                this.lastMouseY = event.clientY;
+            }
+        }
+
+        /**
+         * 处理鼠标松开事件
+         */
+        handleMouseUp() {
+            this.isDragging = false;
+        }
+
+        /**
+         * 检查拖动时的边界
+         */
+        checkBorderWhenDrag() {
+            const imageContainer = this.elements.imageContainer;
+            const svgElement = imageContainer.querySelector('svg');
+            if (!svgElement) return;
+
+            const rect = this.elements.preview.getBoundingClientRect();
+
+            // 获取实际SVG的宽高而不是缩放后的大小
+            const svgWidth = svgElement.getBoundingClientRect().width / this.scale;
+            const svgHeight = svgElement.getBoundingClientRect().height / this.scale;
+
+            // 计算缩放后的SVG宽高
+            const scaledWidth = svgWidth * this.scale;
+            const scaledHeight = svgHeight * this.scale;
+
+            // 当图片小于容器时，限制在容器中心
+            if (scaledWidth <= rect.width) {
+                this.translateX = (rect.width - scaledWidth) / 2;
+            } else {
+                // 当图片大于容器时，限制边界
+                const maxX = 0;
+                const minX = rect.width - scaledWidth;
+                this.translateX = Math.max(minX, Math.min(maxX, this.translateX));
+            }
+
+            if (scaledHeight <= rect.height) {
+                this.translateY = (rect.height - scaledHeight) / 2;
+            } else {
+                const maxY = 0;
+                const minY = rect.height - scaledHeight;
+                this.translateY = Math.max(minY, Math.min(maxY, this.translateY));
+            }
+        }
+
+        /**
+         * 处理双击事件
+         * @param {MouseEvent} event - 鼠标事件对象
+         */
+        handleDoubleTap(event) {
+            if (this.isScaling) return;
+            this.isScaling = true;
+
+            const rect = this.elements.preview.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // 根据当前缩放比例决定下一个缩放级别
+            if (this.scale < this.defScale * 0.7) {
+                // 从小于默认比例缩放到默认比例
+                this.autoScale(this.defScale, x, y);
+            } else if (this.scale < this.fillScale) {
+                // 从默认比例缩放到填充比例
+                this.autoScale(this.fillScale, x, y);
+            } else {
+                // 从填充比例缩放回默认比例，并完全居中
+                this.resetToDefaultView();
+            }
+        }
+
+        /**
+         * 自动缩放动画
+         * @param {number} targetScale - 目标缩放比例
+         * @param {number} x - 缩放中心X坐标
+         * @param {number} y - 缩放中心Y坐标
+         */
+        autoScale(targetScale, x, y) {
+            // 缩放动画速度
+            const ANIMATION_SPEED = 0.07;
+
+            // 添加缩放动画类
+            this.elements.imageContainer.classList.add('scaling');
+
+            // 计算缩放步进
+            const isZoomIn = this.scale < targetScale;
+            const ds = isZoomIn ? 1 + ANIMATION_SPEED : 1 - ANIMATION_SPEED;
+
+            // 执行单步缩放
+            const step = () => {
+                this.scaleAtPoint(x, y, ds);
+
+                // 判断是否继续动画
+                if ((isZoomIn && this.scale < targetScale) || (!isZoomIn && this.scale > targetScale)) {
+                    requestAnimationFrame(step);
+                } else {
+                    // 缩放到目标比例
+                    const ratio = targetScale / this.scale;
+                    this.scaleAtPoint(x, y, ratio);
+
+                    // 确保在回到默认比例时图片完全居中
+                    if (Math.abs(targetScale - this.defScale) < 0.01) {
+                        this.centerImage(true);
+                    }
+
+                    // 移除缩放动画类
+                    setTimeout(() => {
+                        this.elements.imageContainer.classList.remove('scaling');
+                    }, 200);
+
+                    this.isScaling = false;
+                }
+            };
+
+            // 开始动画
+            requestAnimationFrame(step);
+        }
+
+        /**
+         * 计算填充比例
+         */
+        calculateFillScale() {
+            const svgElement = this.elements.imageContainer.querySelector('svg');
+            if (!svgElement) return;
+
+            const rect = this.elements.preview.getBoundingClientRect();
+            const svgRect = svgElement.getBoundingClientRect();
+
+            // 计算使图片适应容器的缩放比例
+            const scaleX = rect.width / svgRect.width;
+            const scaleY = rect.height / svgRect.height;
+
+            // 填充比例稍小于容器适应比例
+            this.fillScale = Math.min(scaleX, scaleY) * 0.9;
+            // 默认比例是1.0
+            this.defScale = 1.0;
+        }
+
+        /**
+         * 切换全屏模式
+         */
+        toggleFullscreen() {
+            const isEntering = !this.isFullscreen;
+
+            if (isEntering) {
+                // 保存原始状态
+                this.originalStyles = {
+                    position: this.container.style.position,
+                    top: this.container.style.top,
+                    left: this.container.style.left,
+                    width: this.container.style.width,
+                    height: this.container.style.height,
+                    zIndex: this.container.style.zIndex
+                };
+
+                // 应用全屏样式
+                this.container.style.position = 'fixed';
+                this.container.style.top = '0';
+                this.container.style.left = '0';
+                this.container.style.width = '100%';
+                this.container.style.height = '100%';
+                this.container.style.zIndex = '9999';
+
+                // 更新全屏状态和按钮文本
+                this.elements.fullscreen.innerHTML = '❌';
+                this.elements.fullscreen.title = '退出全屏';
+
+                // 显示状态提示
+                this.showStatusTip('已进入全屏模式');
+            } else {
+                // 恢复原始样式
+                if (this.originalStyles) {
+                    Object.keys(this.originalStyles).forEach(key => {
+                        this.container.style[key] = this.originalStyles[key];
+                    });
+                }
+
+                // 更新全屏状态和按钮文本
+                this.elements.fullscreen.innerHTML = '<span>🔲</span>';
+                this.elements.fullscreen.title = '全屏';
+
+                // 显示状态提示
+                this.showStatusTip('已退出全屏模式');
+            }
+
+            // 更新状态
+            this.isFullscreen = isEntering;
+
+            // 刷新变换
+            setTimeout(() => this.centerImage(), 100);
+        }
+
+        /**
+         * 图片操作：下载和复制
+         * @param {'download'|'copy'} action - 操作类型
+         */
+        async processImage(action) {
+            try {
+                if (!this.svg) {
+                    this.showStatusTip(`没有可${action === 'download' ? '下载' : '复制'}的图片`, 'error');
+                    return;
+                }
+
+                const canvas = await this.svgToImage();
+
+                if (action === 'download') {
+                    const image = canvas.toDataURL('image/png', 1.0);
+                    let fileName = 'mermaid_chart.png';
+
+                    if (this.options.getFileName && typeof this.options.getFileName === 'function') {
+                        fileName = this.options.getFileName() || fileName;
+                    }
+
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = fileName;
+                    link.click();
+
+                    this.showStatusTip('图片下载成功');
+                } else {
+                    canvas.toBlob(async (blob) => {
+                        try {
+                            await navigator.clipboard.write([
+                                new ClipboardItem({
+                                    'image/png': blob
+                                })
+                            ]);
+                            this.showStatusTip('图片已复制到剪贴板');
+                        } catch (err) {
+                            this.showStatusTip('复制图片失败，请重试', 'error');
+                        }
+                    }, 'image/png', 1.0);
+                }
+            } catch (err) {
+                this.showStatusTip(`${action === 'download' ? '下载' : '复制'}图片失败，请重试`, 'error');
+            }
+        }
+    }
+</script>
+<script>
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: 'loose',
+        theme: 'base',
+        themeVariables: {
+            primaryColor: '#fff',
+            lineColor: '#212529'
+        }
+    });
+    // 初始化联合代码编辑器实例
+    const unifiedEditor = new UnifiedEditor('unified-editor', () => {
+        viewer.renderMermaid(editorState.getText());
+        sidebar.updateCurrentChart();
+    });
+
+    // 获取编辑器实例和状态
+    const editors = unifiedEditor.getEditors();
+    const editorState = unifiedEditor.getEditorState();
+
+    const sidebar = new Sidebar('sidebar', {
+        renderCallback: () => viewer.renderMermaid(editorState.getText())
+    });
+
+    // 初始化查看器实例
+    const viewer = new Viewer('preview-container', {
+        onRender: () => sidebar.updateCurrentChart(),
+        getFileName: () => {
+            const chart = sidebar.charts.find(c => c.id === sidebar.currentChartId);
+            let fileName = 'mermaid_chart.png';
+            if (chart) {
+                const chartType = sidebar.getChartTypeDescription(chart.content.code);
+                const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                fileName = `${chart.title}_${chartType || '图表'}_${dateStr}.png`;
+                fileName = fileName.replace(/[\\/:*?"<>|]/g, '_');
+            }
+            return fileName;
+        }
+    });
+
+    init();
+
+    function init() {
+        // 设置编辑器状态和实例
+        sidebar.renderHistoryList()
+        sidebar.setEditorState(editorState);
+        sidebar.setEditors(editors);
+        const _id = localStorage.getItem('sidebar-switchChart-id')
+        if (_id) sidebar.switchChart(parseInt(_id))
+    }
+</script>
+</body>
+</html>

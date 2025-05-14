@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+<body>
+<div class="layui-fluid" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div class="layui-row" style="width: 100%; max-width: 800px;">
+        <form class="layui-form"
+              style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333; font-size: 24px;">管理员信息编辑</h2>
+            <div class="layui-form-item" id="a-upload"></div>
+
+            <div class="layui-form-item" style="margin-bottom: 25px;">
+                <label for="L_username" class="layui-form-label" style="width: 110px;">
+                    <span class="x-red">*</span>用户名</label>
+                <div class="layui-input-inline" style="margin-left: 30px;">
+                    <input type="text" id="L_username" name="username" required="" lay-verify="nikename"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item" id="pass_l" style="margin-bottom: 25px;">
+                <label for="L_pass" class="layui-form-label" style="width: 110px;">密码</label>
+                <div class="layui-input-inline" style="margin-left: 30px;">
+                    <input type="password" id="L_pass" name="pass" autocomplete="off" class="layui-input"></div>
+                <div class="layui-form-mid layui-word-aux">6到16个字符</div>
+            </div>
+            <div class="layui-form-item" id="repass_l" style="margin-bottom: 25px;">
+                <label for="L_repass" class="layui-form-label" style="width: 110px;" id="alslqd">新密码</label>
+                <div class="layui-input-inline" style="margin-left: 30px;">
+                    <input type="password" id="L_repass" name="repass" autocomplete="off" class="layui-input"></div>
+            </div>
+
+            <div class="layui-form-item" style="margin-bottom: 25px;">
+                <label for="L_role_container" class="layui-form-label" style="width: 110px;"><span
+                        class="x-red">*</span>角色</label>
+                <div class="layui-input-block" id="L_role_container" style="margin-left: 140px;"></div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block" style="margin-left: 0; text-align: center; margin-top: 30px;">
+                    <button id="add" class="layui-btn" lay-filter="add" lay-submit=""
+                            style="width: 100%; height: 40px; font-size: 16px; background-color: #009688;">增加
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script id="role-template" type="text/html">
+    <input type="radio" name="like1" lay-skin="primary" title="{{ role.title }}" value="{{ role.value }}"
+           {{role.checked ? 'checked' : '' }}>
+</script>
+<script>
+    const ui = {
+        add: document.getElementById("add"),
+        pass: document.getElementById("L_pass"),
+        repass: document.getElementById("L_repass"),
+        name: document.getElementById("L_username"),
+        passL: document.getElementById("pass_l"),
+        repassL: document.getElementById("repass_l"),
+        imgUi: buildImg('a-upload', '头像', '点击上传封面图'),
+        roleContainer: document.getElementById("L_role_container")
+    }
+
+    function initUi(html, data) {
+        ui.roleContainer.innerHTML = html
+        ui.imgUi.init(data.fileUrl)
+        if (data.name)
+            ui.name.value = data.name
+    }
+</script>
+<script>
+    const aid = sessionStorage.getItem('aid');
+    const json = sessionStorage.getItem("admin-edit")
+    const admin = JSON.parse(json)
+
+
+    function initRole(form) {
+        httpTool.execute(urls.GetSimpleRoles, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            var html = res.data.map(role => `<input type="radio" name="like1" lay-skin="primary" title="${role.name}" value="${role.id}" ${role.id === admin.roleId ? 'checked' : ''}>`).join('')
+            initUi(html, admin)
+            form.render()
+        })
+    }
+
+
+    switch (admin.flag) {
+        case "edit":
+            edit()
+            break
+        case "add":
+            add()
+            break
+    }
+
+    function add() {
+        ui.add.innerText = "添加"
+        document.getElementById('alslqd').innerText = '确认密码'
+        initLay((form, layer, upload) => {
+            form.verify({
+                nikename: value => {
+                    if (value.length < 5) {
+                        return '昵称至少得5个字符啊';
+                    }
+                },
+                pass: value => {
+                    if (!/(.+){6,20}$/.test(value)) {
+                        return '密码必须6到20位';
+                    }
+                },
+                repass: value => {
+                    if (ui.pass.value !== value) {
+                        return '两次密码不一致';
+                    }
+                }
+            })
+            initRole(form)
+
+            myUpload(upload, layer, ui.imgUi, httpTool.fileUpload);
+
+            //监听提交
+            form.on('submit(add)', data => {
+                const field = data.field
+                const req = {
+                    AdminId: aid,
+                    FileUrl: ui.imgUi.fileUrl.value,
+                    Name: field.username,
+                    Password: field.pass,
+                    RoleId: field.like1
+                }
+                httpTool.execute(urls.AddAdmin, req).then(res => {
+                    if (res === undefined) return
+                    layer.alert("修改成功", {icon: 6}, () => {
+                        var index = parent.layer.getFrameIndex(window.name)
+                        parent.layer.close(index)
+                    })
+                })
+                return false
+            })
+        })
+    }
+
+    function edit() {
+        ui.add.innerText = "修改"
+
+        initLay((upload, form, layer) => {
+            form.verify({
+                nikename: function (value) {
+                    if (value.length < 5) {
+                        return '昵称至少得5个字符';
+                    }
+                }
+            })
+
+            initRole(form)
+            myUpload(upload, layer, ui.imgUi, httpTool.fileUpload)
+
+            //监听提交
+            form.on('submit(add)', data => {
+                const field = data.field
+                var pass = ui.pass.value
+                const repass = ui.repass.value
+                if (pass === null || pass === undefined || pass === "")
+                    pass = null
+                if (pass !== null) {
+                    if (!/(.+){6,20}$/.test(pass)) {
+                        layer.msg("密码必须6到20位");
+                        return false
+                    }
+                    if (pass === repass) {
+                        layer.msg("两次密码一致");
+                        return false
+                    }
+                }
+                const req = {
+                    AdminId: aid,
+                    Id: admin.id,
+                    Name: field.username,
+                    FileUrl: ui.imgUi.fileUrl.value,
+                    Password: pass,
+                    NewPassword: repass,
+                    RoleId: field.like1
+                }
+                httpTool.execute(urls.ChangeAdminInfo, req).then(res => {
+                    if (res === undefined) return
+                    layer.alert("修改成功", {icon: 6}, () => {
+                        var index = parent.layer.getFrameIndex(window.name)
+                        parent.layer.close(index)
+                    })
+                })
+                return false
+            })
+        })
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,23 @@
+﻿1、category_item
+id_category（食材、食谱、合集） + t_id（具体id）
+
+2、comment
+type_id（食材、食谱、合集） + t_id（具体id）
+
+3、dietary_record
+id_category（食材、食谱） + tid（具体id）
+
+4、favorite
+id_category（食材、食谱、合集）+ favorite_item.t_id（具体id）
+
+5、release
+id_category（食材、食谱、合集）+ t_id（具体id）
+
+6、release
+op_flag（用户、管理员） + author_id（具体id）
+
+7、release_flow_history
+op_flag（用户、管理员） + op_id（具体id）
+
+8、report
+id_category（食材、食谱、合集、评论、用户） + t_id（具体id）

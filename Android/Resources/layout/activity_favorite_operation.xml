@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp">
+
+    <ImageView
+            android:layout_marginTop="60dp"
+            android:id="@+id/id_favorite_operation_file_url"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/b"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:visibility="visible">
+
+        <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="3dp"
+                android:layout_marginLeft="8dp"
+                android:src="@drawable/ic_name"/>
+
+        <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:text="类型"
+                android:textColor="#333333"
+                android:textSize="15sp"/>
+
+        <TextView
+                android:id="@+id/id_favorite_operation_category"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:textColor="#43496A"
+                android:textSize="16dp"/>
+    </LinearLayout>
+
+    <View
+            android:layout_margin="4dp"
+            android:background="#41000000"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"/>
+
+    <LinearLayout
+            android:id="@+id/id_favorite_operation_name_layout"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:visibility="visible">
+
+        <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="3dp"
+                android:layout_marginLeft="8dp"
+                android:src="@drawable/ic_name"/>
+
+        <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:text="名称"
+                android:textColor="#333333"
+                android:textSize="15sp"/>
+
+        <TextView
+                android:id="@+id/id_favorite_operation_name"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:textColor="#43496A"
+                android:textSize="16dp"/>
+
+        <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="25dp"
+                android:src="@drawable/ic_right_arrow"/>
+    </LinearLayout>
+
+    <View
+            android:layout_margin="4dp"
+            android:background="#41000000"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"/>
+
+    <LinearLayout
+            android:id="@+id/id_favorite_operation_ref_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible">
+
+        <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="3dp"
+                android:layout_marginLeft="8dp"
+                android:src="@drawable/ic_name"/>
+
+        <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="20dp"
+                android:text="简介"
+                android:textColor="#333333"
+                android:textSize="15sp"/>
+
+        <TextView
+                android:id="@+id/id_favorite_operation_ref"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:layout_height="200dp"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:textColor="#43496A"
+                android:textSize="16dp"/>
+
+        <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="25dp"
+                android:src="@drawable/ic_right_arrow"/>
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/id_favorite_operation_sub"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="12dp"
+            android:layout_marginTop="60dp"
+            android:layout_marginRight="12dp"
+            android:background="@drawable/shape_button_bg"
+            android:gravity="center"
+            android:text="新建"
+            android:textColor="#ffffff"
+            android:textSize="16sp"/>
+</LinearLayout>

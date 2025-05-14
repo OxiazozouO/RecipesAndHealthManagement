@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 正常状态 -->
+    <item android:state_enabled="true"
+          android:state_pressed="false"
+          android:state_focused="false">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="999dp"/>
+                    <gradient
+                            android:type="linear"
+                            android:startColor="#616161"
+                            android:endColor="#5d4157"
+                            android:angle="0"/>
+                </shape>
+            </item>
+            <item
+                    android:bottom="1dp"
+                    android:left="1dp"
+                    android:right="1dp"
+                    android:top="1dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="999dp"/>
+                    <gradient
+                            android:type="linear"
+                            android:startColor="#9795f0"
+                            android:endColor="#fbc8d4"
+                            android:angle="0"/>
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    <!-- 触摸（按下）状态 -->
+    <item android:state_pressed="true">
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="999dp"/>
+                    <gradient
+                            android:type="linear"
+                            android:startColor="#616161"
+                            android:endColor="#5d4157"
+                            android:angle="0"/>
+                </shape>
+            </item>
+            <item
+                    android:bottom="1dp"
+                    android:left="1dp"
+                    android:right="1dp"
+                    android:top="1dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="999dp"/>
+                    <gradient
+                            android:type="linear"
+                            android:startColor="#9890e3"
+                            android:endColor="#b1f4cf"
+                            android:angle="0"/>
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

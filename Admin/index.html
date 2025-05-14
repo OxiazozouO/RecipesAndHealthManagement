@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title>食谱与健康管理平台</title>
+    <link rel="icon" href="./images/logo.png" type="image/x-icon">
+
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <script>
+        const jwt = sessionStorage.getItem('jwt');
+        const aid = sessionStorage.getItem('aid');
+        const adminName = sessionStorage.getItem('adminName');
+        const adminUrl = sessionStorage.getItem('adminUrl');
+
+        if (!jwt || !aid || !adminName || !adminUrl) {
+            alert('请重新登录')
+
+            window.location.href = './src/index/login/login.html'
+            document.open()
+            document.close()
+        }
+    </script>
+    <link rel="stylesheet" href="./src/comm/myUtil/myUtil.css">
+    <script type="text/javascript" src="./js/httpUtil.js"></script>
+    <script type="text/javascript" src="./src/comm/myUtil/myUtil.js"></script>
+
+    <style>
+        .left_open {
+            width: 100%;
+            cursor: pointer;
+            padding: 10px 20px;
+            display: flex;
+            transition: background-color 0.3s;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .left_open:hover {
+            background-color: rgba(0, 80, 0, 0.1);
+        }
+
+        .left_open i {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #666;
+            font-size: 18px;
+        }
+
+        .left_open:hover i {
+            color: #005a55;
+        }
+
+        .left_open.active i {
+            transform: rotate(180deg);
+            color: #004d47;
+        }
+
+        .layui-nav.left {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .layui-inline.layui-show-xs-block {
+            display: inline-block;
+        }
+
+        .layui-input {
+            width: auto;
+        }
+
+        .layui-btn {
+            margin-left: 10px;
+        }
+
+        #side-nav a {
+            transition: all 0.3s ease-in-out;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        #side-nav a.closed {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+    </style>
+</head>
+<body class="index">
+<!-- 顶部 -->
+<div class="container">
+    <div class="logo">
+        <a href="./index.html">管理后台</a>
+    </div>
+    <div class="layui-nav left" style="padding: 7px">
+        <div class="layui-inline">
+            <input type="text" id="search-text"
+                   placeholder="搜索菜单"
+                   autocomplete="off" class="layui-input">
+        </div>
+        <div class="layui-inline">
+            <button class="layui-btn layui-btn-radius" id="search" type="button">
+                <i class="iconfont28">&#xea13;</i>
+            </button>
+        </div>
+        <div class="layui-inline">
+            <button class="layui-btn layui-btn-radius" id="search-close" type="button">
+                <i class="iconfont28">&#xe630;</i>
+            </button>
+        </div>
+    </div>
+    <ul class="layui-nav right">
+        <img id="userUrl" alt="" src="" style="width: 30px;height: auto" onclick="previewImg(this)"/>
+        <li class="layui-nav-item">
+            <a id="username">admin</a>
+            <dl class="layui-nav-child">
+                <dd><a href="src/index/login/login.html">退出</a></dd>
+            </dl>
+        </li>
+    </ul>
+</div>
+<!-- 左侧菜单 -->
+<div class="left-nav" id="left-nav"></div>
+<script>
+    const ui = {
+        search: document.getElementById('search'),
+        searchText: document.getElementById('search-text'),
+        searchClose: document.getElementById('search-close'),
+    }
+
+    let nav = [
+        {
+            icon: '&#xe680;', tip: '账户授权',
+            data: [
+                {icon: '&#xe81e;', tip: '用户管理', url: 'src/account/user/user-list.html'},
+                {icon: '&#xe793;', tip: '管理员管理', url: 'src/account/admin/admin-list.html'},
+                {icon: '&#xe793;', tip: '角色管理', url: 'src/account/role/role-list.html'},
+                {icon: '&#xe793;', tip: '权限管理', url: 'src/account/permission/permission-list.html'},
+            ]
+        },
+        {
+            icon: '&#xe71f;', tip: '审核批阅',
+            data: [
+                {icon: '&#xe833;', tip: '初步筛查', url: 'src/audit/release/release-list.html'},
+                {icon: '&#xe82f;', tip: '终审批阅', url: 'src/audit/confirm/confirm-list.html'},
+                {icon: '&#xe831;', tip: '举报管理', url: 'src/audit/report/report-list.html'},
+                {icon: '&#xe700;', tip: '评论管理', url: 'src/audit/comment/comment-list.html'},
+            ]
+        },
+        {
+            icon: '&#xe763;', tip: '分类管理',
+            data: [
+                {icon: '&#xe824;', tip: '分类总表', url: 'src/category/category/category-list.html'},
+                {icon: '&#xe82e;', tip: '食材分类表', url: 'src/category/categoryItem/ingredient-list.html'},
+                {icon: '&#xe82e;', tip: '食谱分类表', url: 'src/category/categoryItem/recipe-list.html'},
+                {icon: '&#xe82e;', tip: '合集分类表', url: 'src/category/categoryItem/collection-list.html'},
+            ]
+        },
+        {
+            icon: '&#xe6ff;', tip: '资源管理',
+            data: [
+                {icon: '&#xe824;', tip: '食材管理', url: 'src/asset/ingredient/ingredient-list.html'},
+                {icon: '&#xe82e;', tip: '食谱管理', url: 'src/asset/recipe/recipe-list.html'},
+                {icon: '&#xe82e;', tip: '合集管理', url: 'src/asset/collection/collection-list.html'},
+            ]
+        },
+        {
+            icon: '&#xe703;', tip: '系统维护',
+            data: [
+                {icon: '&#xe671;', tip: '系统配置', url: 'src/configuration/syscfg/syscfg.html'},
+                {icon: '&#xe619;', tip: '备份和还原', url: 'src/configuration/backup/backup.html'},
+                {icon: '&#xe7dc;', tip: '图标', url: 'src/configuration/tool/unicode.html'},
+                {icon: '&#xe667;', tip: '错误页面', url: 'src/configuration/tool/error.html'},
+                {icon: '&#xe8af;', tip: 'URL收集', url: 'src/configuration/tool/get-url.html'},
+                {icon: '&#xe66f;', tip: 'Mermaid编辑', url: 'src/configuration/tool/mermaid-edit.html'},
+            ]
+        }
+    ]
+
+    const mmw = {
+        "5": "src/category/category/category-editor",
+        "8": "src/category/categoryItem/ingredient-list",
+        "9": "src/category/categoryItem/recipe-list",
+        "23": "src/account/permission/permission-editor",
+        "41": "src/audit/confirm/confirm-editor",
+        "43": "src/audit/release/recipe-editor",
+        "52": "src/account/user/user-editor",
+        "53": "src/account/user/user-password",
+        "72": "src/account/role/role-editor",
+        "75": "src/asset/collection/collection-editor",
+        "81": "src/audit/release/collection-editor",
+        "82": "src/category/categoryItem/collection-list",
+        "19,34,74": "src/comm/list-select/list-select",
+        "63,64,70": "src/configuration/syscfg/syscfg",
+        "65,66,67,68,71": "src/configuration/backup/backup",
+        "10,11,13,14": "src/category/categoryItem/categoryitem-editor",
+        "6,7,12": "src/category/category/category-list",
+        "59,60,61,62": "src/audit/report/report-list",
+        "20,42": "src/audit/release/ingredient-editor",
+        "40": "src/audit/release/release-list",
+        "39,47": "src/audit/confirm/confirm-list",
+        "56,57,58": "src/audit/comment/comment-list",
+        "28,32": "src/asset/recipe/recipe-editor",
+        "30,34,38": "src/asset/recipe/recipe-list",
+        "18,20": "src/asset/ingredient/ingredient-editor",
+        "16,19,21": "src/asset/ingredient/ingredient-list",
+        "74,78,79": "src/asset/collection/collection-list",
+        "54,55,69": "src/account/user/user-list",
+        "48,50": "src/account/role/role-list",
+        "27,49": "src/account/role/role-permission-editor",
+        "24,25,26": "src/account/permission/permission-list",
+        "3,4": "src/account/admin/admin-list",
+        "1,2,51": "src/account/admin/admin-editor"
+    }
+
+    function filterNav(data) {
+        // 提取 data 对应的 mmw 中的值
+        const allowedUrls = new Set();
+        data.forEach(num => {
+            for (const [key, value] of Object.entries(mmw)) {
+                const keys = key.split(',').map(Number);
+                if (keys.length > 0 && (keys.includes(num) || keys[0] === -1)) {
+                    allowedUrls.add(`${value}.html`);
+                }
+            }
+        });
+        const result = [];
+        nav.forEach(n => {
+            const dd = [];
+            n.data.forEach(d => {
+                if (allowedUrls.has(d.url)) {
+                    dd.push(d)
+                }
+            })
+            if (dd.length > 0) {
+                const ww = {};
+                ww.icon = n.icon
+                ww.tip = n.tip
+                ww.data = dd
+                result.push(ww)
+            }
+        })
+        nav = result
+    }
+
+    const map = new Map();
+    let isInit = 0;
+
+    function initNav() {
+        nav.forEach(e => e.data.forEach(i => {
+            i.id = md5(i.url)
+            if (!map[i.id]) map[i.id] = {pTip: e.tip, tip: i.tip, url: i.url}
+        }))
+        document.getElementById('left-nav').innerHTML = nav.map(e => {
+            var str = ''
+            if (isInit === 0) {
+                str = `<div class="left_open" onclick="this.classList.toggle('active')">
+                            <i class="iconfont18 left-nav-li">&#xe8e3;</i>
+                       </div>`
+                isInit = 1
+            }
+            return `<div id="side-nav"><ul id="nav">${str}<li><a>
+                    <i class="iconfont18 left-nav-li">${e.icon}</i>
+                    <cite>${e.tip}</cite>
+                    <i class="iconfont18 nav_right">&#xe697;</i></a>
+                    <ul class="sub-menu">${e.data.map(i =>
+                `<li><a onclick="addTab(this, '${i.id}','${e.tip}','${i.tip}','${i.url}')">
+                            <i class="iconfont18">${i.icon}</i>
+                            <cite>${i.tip}</cite></a>
+                        </li>`).join('')}
+                    </ul></li></ul></div>`
+        }).join('')
+    }
+
+    function addTab(ui, id, title, title2, path) {
+        const {pTip, tip, url} = map[id]
+        sessionStorage.setItem('index', JSON.stringify(map[id]))
+        put(pTip, tip, url)
+    }
+
+    function put(pTip, tip, url) {
+        xadmin.add_tab(tip, url, '', '', true)
+    }
+
+    ui.search.addEventListener('click', () => {
+        const str = ui.searchText.value
+        document.getElementById('left-nav').querySelectorAll('#side-nav').forEach(a => {
+            var flag = false
+            var ui = null
+            a.querySelectorAll('a').forEach(b => {
+                const o = b.getAttribute('onclick')
+                if (o) {
+                    if (o.includes(str)) {
+                        openUi(b)
+                        flag = true
+                    } else {
+                        closeUi(b)
+                    }
+                } else {
+                    const cite = b.querySelector('cite')
+                    if (cite.innerText.includes(str)) {
+                        openUi(b)
+                    } else {
+                        ui = b
+                    }
+                }
+            })
+            if (!flag && ui) {
+                closeUi(ui)
+            }
+        })
+    })
+
+    function closeUi(b) {
+        b.classList.add('closed')
+        setTimeout(() => b.style.display = 'none', 300)
+    }
+
+    function openUi(b) {
+        b.style.display = 'block'
+        setTimeout(() => b.classList.remove('closed'), 10)
+    }
+
+    ui.searchClose.addEventListener('click', () => {
+        ui.searchText.value = ''
+        ui.search.click()
+    })
+
+    document.getElementById('username').innerText = adminName
+    document.getElementById('userUrl').src = adminUrl
+
+    httpTool.execute(urls.GetSimpleRolePermissions, {AdminId: aid}).then(res => {
+        if (res === undefined) return
+        filterNav(res.data)
+        initNav()
+    })
+</script>
+<!-- 右侧主体 -->
+<div class="page-content">
+    <div class="layui-tab tab" lay-filter="xbs_tab" lay-allowclose="false">
+        <ul class="layui-tab-title" id="tab-title">
+            <li class="home">
+                <i class="layui-icon">&#xe68e;</i>我的桌面
+            </li>
+        </ul>
+        <div class="layui-unselect layui-form-select layui-form-selected" id="tab_right">
+            <dl>
+                <dd data-type="this">关闭当前</dd>
+                <dd data-type="other">关闭其它</dd>
+                <dd data-type="all">关闭全部</dd>
+            </dl>
+        </div>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <iframe src='src/index/welcome/welcome.html' frameborder="0" scrolling="yes" class="x-iframe"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="./lib/layui/layui.js" charset="utf-8"></script>
+<link rel="stylesheet" href="./css/xadmin.css">
+<script type="text/javascript" src="./js/xadmin.js"></script>
+<script>
+    initLay((element, form) => {
+        const json = sessionStorage.getItem('index')
+        const index = JSON.parse(json)
+        if (index instanceof Object) {
+            put(index.pTip, index.tip, index.url)
+        }
+
+        element.on('tab(xbs_tab)', obj => {
+            if (obj.elem.context.className !== 'layui-this') return
+            const id = obj.elem.context.getAttribute('lay-id')
+            if (!id || !map[id]) return
+            sessionStorage.setItem('index', JSON.stringify(map[id]))
+        })
+    })
+</script>
+<link rel="stylesheet" href="./css/font.css">
+</html>

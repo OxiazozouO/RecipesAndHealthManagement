@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="login.css">
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script src="../../../lib/particles.2.0.0.js"></script>
+    <title>食谱与健康管理平台 管理后台登录</title>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="login-container">
+    <h1>食谱与健康管理平台</h1>
+    <p class="welcome-text">欢迎回来！请登录您的账号</p>
+    <form id="loginForm">
+        <div class="input-group">
+            <i class="iconfont input-icon">&#xe732;</i>
+            <input name="username" type="text" placeholder="请输入用户名" content="admin1" required>
+        </div>
+
+        <div class="input-group">
+            <i class="iconfont input-icon">&#xe6f9;</i>
+            <input name="password" type="password" placeholder="请输入密码" id="password" content="qwq1714050472"
+                   required>
+            <i class="iconfont password-toggle" id="togglePassword">&#xe648;</i>
+        </div>
+
+        <div class="options">
+            <label class="remember-me">
+                <input name="remember-me" type="checkbox"> 记住我
+            </label>
+<!--            <a href="#">忘记密码？</a>-->
+        </div>
+
+        <button type="submit" id="login">登录</button>
+    </form>
+<!--    <p class="register-link">还没有账号？<a href="#">立即注册</a></p>-->
+</div>
+<script>
+    particlesJS('particles-js', {
+        particles: {
+            number: {
+                value: 80,
+                density: {
+                    enable: true,
+                    value_area: 800
+                }
+            },
+            color: {
+                value: `#007bff`
+            },
+            shape: {
+                type: 'circle'
+            },
+            opacity: {
+                value: 0.5,
+                random: false
+            },
+            size: {
+                value: 3,
+                random: true
+            },
+            line_linked: {
+                enable: true,
+                distance: 150,
+                color: '#007bff',
+                opacity: 0.4,
+                width: 1
+            },
+            move: {
+                enable: true,
+                speed: 2,
+                direction: 'none',
+                random: false,
+                straight: false,
+                out_mode: 'out',
+                bounce: false
+            }
+        },
+        interactivity: {
+            detect_on: 'canvas',
+            events: {
+                onhover: {
+                    enable: true,
+                    mode: 'grab'
+                },
+                onclick: {
+                    enable: true,
+                    mode: 'push'
+                },
+                resize: true
+            },
+            modes: {
+                grab: {
+                    distance: 140,
+                    line_linked: {
+                        opacity: 1
+                    }
+                },
+                push: {
+                    particles_nb: 4
+                }
+            }
+        },
+        retina_detect: true
+    })
+    const ui = {
+        rememberMe: document.querySelector('input[name="remember-me"]'),
+        username: document.querySelector('input[name="username"]'),
+        password: document.querySelector('input[name="password"]'),
+        togglePassword: document.getElementById('togglePassword'),
+        loginForm: document.getElementById('loginForm')
+    }
+    let model = {
+        rememberMe: localStorage.getItem('remember-me'),
+        jwt: localStorage.getItem('jwt'),
+        aid: localStorage.getItem('aid'),
+        username: localStorage.getItem('adminName'),
+        password: localStorage.getItem('password'),
+        url: localStorage.getItem('adminUrl')
+    }
+    if (model.rememberMe) {
+        ui.rememberMe.checked = true
+        ui.username.value = model.username
+        ui.password.value = model.password
+    } else {
+        model = {}
+    }
+
+    function save(data) {
+        if (model.rememberMe) {
+            localStorage.setItem('remember-me', model.rememberMe)
+            localStorage.setItem('jwt', data.jwt)
+            localStorage.setItem('aid', data.id)
+            localStorage.setItem('adminName', model.username)
+            localStorage.setItem('password', model.password)
+            localStorage.setItem('adminUrl', data.url)
+        } else {
+            localStorage.removeItem('remember-me')
+            localStorage.removeItem('jwt')
+            localStorage.removeItem('aid')
+            localStorage.removeItem('adminName')
+            localStorage.removeItem('password')
+        }
+
+        sessionStorage.setItem('remember-me', model.rememberMe)
+        sessionStorage.setItem('jwt', data.jwt)
+        sessionStorage.setItem('aid', data.id)
+        sessionStorage.setItem('adminName', model.username)
+        sessionStorage.setItem('password', model.password)
+        sessionStorage.setItem('adminUrl', data.url)
+        window.location.href = '../../../index.html'
+    }
+</script>
+<script>
+    ui.togglePassword.addEventListener('click', () => {
+        const type = ui.password.getAttribute('type') === 'password' ? 'text' : 'password';
+        ui.password.setAttribute('type', type);
+        ui.togglePassword.innerHTML = type === 'password' ? '&#xe648;' : '&#xe649;';
+    });
+
+    ui.loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+        model = {
+            rememberMe: ui.rememberMe.checked,
+            username: ui.username.value,
+            password: ui.password.value
+        }
+        const req = {
+            username: model.username,
+            password: model.password
+        }
+        httpTool.execute(urls.Login, req).then(res => {
+            if (res === undefined) return
+            const data = res.data
+            save(data)
+        })
+    });
+</script>
+</body>
+</html>

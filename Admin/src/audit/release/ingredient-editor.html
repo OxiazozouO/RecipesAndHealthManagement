@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <link rel="stylesheet" href="../../comm/ingredient-editor/ingredient-editor.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+<body>
+<script src="../../comm/ingredient-editor/ingredient-editor.js"></script>
+<script>
+    releaseId = parseInt(sessionStorage.getItem("release-edit")) || -1
+    apiUrl = urls.EditIngredient;
+
+    httpTool.execute(urls.GetReleaseIngredient, {AdminId: aid, Id: releaseId}).then(res => {
+        if (res === undefined) return
+        ingredient = res.data
+        httpTool.execute(urls.GetNutrients, {AdminId: aid}).then(res2 => {
+            if (res2 === undefined) return
+            nutrients = []
+            for (var d2 of res2.data) {
+                var value = ''
+                for (var d1 of res.data.nutritional) {
+                    if (d2.id === d1.id) {
+                        value = d1.value
+                        break
+                    }
+                }
+                nutrients.push({id: d2.id, name: d2.name, unit: d2.unit, value: value})
+            }
+            ii()
+        })
+    })
+</script>
+</body>
+
+</html>

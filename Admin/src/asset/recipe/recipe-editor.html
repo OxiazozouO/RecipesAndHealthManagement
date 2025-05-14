@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <link rel="stylesheet" href="../../comm/recipe-editor/steps.css">
+    <link rel="stylesheet" href="../../comm/recipe-editor/ingredients.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+<body>
+<script src="../../comm/recipe-editor/recipe-editor.js"></script>
+<script src="../../comm/recipe-editor/ingredients.js"></script>
+<script src="../../comm/recipe-editor/steps.js"></script>
+<script>
+    const data = JSON.parse(sessionStorage.getItem("recipe-edit"))
+    apiUrl = data.flag === 'add' ? urls.AddRecipe : urls.EditRecipe
+
+    if (data.flag === 'edit') {
+        httpTool.execute(urls.GetRecipe, {AdminId: aid, Id: data.id}).then(res => {
+            if (res === undefined) return
+            recipe = res.data
+            init()
+        });
+    } else if (data.flag === 'view') {
+        recipe = JSON.parse(sessionStorage.getItem("recipe-view"))
+        init()
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'report'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '举报处理'}, {href: '', title: '举报列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'   , id: 'clc'}", name: 'ID'},
+            {data: "{field:'reportId'  , width:80  , sort: true}", name: '举报ID'},
+            {data: "{field:'uName'     , width:120 , sort: true, templet: user}", name: '发起者'},
+            {data: "{field:'idCategory', width:120  , templet: category, sort: true}", name: '被举报类型'},
+            {data: "{field:'eTitle'    , width:180 , sort: true, templet: ent}", name: '被举报内容'},
+            {data: "{field:'rType'     , width:120 , sort:true, templet:rType}", name: '举报类型'},
+            {data: "{field:'content'   , width:160 , sort: true}", name: '说明'},
+            {data: "{field:'status'    , width:100 , templet: status, sort: true}", name: '处理状态'},
+            {data: "{width:120 , templet: sets}", name: '操作'},
+            {data: "{field:'createDate', width:150 }", name: '创建日期'},
+            {data: "{field:'processingTime'    , width:150 , sort: true}", name: '处理时间'},
+        ],
+        search: {
+            ["eTitle"]: "请输入被举报内容",
+            ["content"]: "请输入说明",
+            ["idCategory"]: AllIdCategoryOptions,
+            ["status"]: ReportTypesOptions,
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script>
+    function user(d) {
+        return `${generateImg(d.uFileUrl, '')}${d.uName}`
+    }
+
+    function category(d) {
+        return generateStatus(d.idCategory, AllIdCategoryMap)
+    }
+
+    function ent(d) {
+        return `${generateImg(d.eFileUrl, '')}${d.eTitle}`
+    }
+
+    function rType(d) {
+        return generateStatus(d.rType, ReportTypesMap)
+    }
+
+    function status(d) {
+        return generateStatus(d.status, ReportStatusMap)
+    }
+
+    const setsData = [
+        {icon: '&#xe7c4;', title: '处理', f: [ReportStatus.Pending], eve: 'tab-report-off'},
+        {icon: '&#xe67f;', title: '驳回', f: [ReportStatus.Pending], eve: 'tab-reject'},
+        {
+            icon: '&#xe7c8;', title: '删除', f: [ReportStatus.Pending, ReportStatus.Reject, ReportStatus.Locked],
+            eve: 'tab-delete'
+        },
+    ];
+
+    function sets(d) {
+        return setsData
+            .map(item => item.f.map(String).includes(String(d.status)) ? `<a title="${item.title}" lay-event="${item.eve}"><i class="iconfont18">${item.icon}</i></a>` : '')
+            .join('');
+    }
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData"> 获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+            }
+        })
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'tab-report-off':
+                    httpTool.execute(urls.ReportOff, {
+                        AdminId: aid,
+                        Id: data.reportId,
+                        IdCategory: data.idCategory
+                    }).then(res => {
+                        if (res === undefined) return
+                        layer.msg(res.message)
+                        table.reload(pageId)
+                    })
+                    break;
+                case 'tab-reject':
+                    httpTool.execute(urls.RejectReport, {
+                        AdminId: aid,
+                        Id: data.reportId
+                    }).then(res => {
+                        if (res === undefined) return
+                        layer.msg(res.message)
+                        table.reload(pageId)
+                    })
+                    break;
+                case 'tab-delete':
+                    httpTool.execute(urls.DeleteReject, {
+                        AdminId: aid,
+                        Id: data.reportId,
+                    }).then(res => {
+                        if (res === undefined) return
+                        layer.msg(res.message)
+                        table.reload(pageId)
+                    })
+                    break;
+            }
+            form.render()
+        });
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetReports, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+</script>
+
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'role'
+    const {searchUi, parameter} = generateTab({
+        nav:[{href: '', title: '首页'}, {href: '', title: '资源管理'}, {href: '', title: '食材列表'}],
+        bar: {id: pageId, data: "{toolbar: '#bar'}"},
+        data: [
+            {data: "{type:'checkbox', id: 'clc'}", name: "ID"},
+            {data: "{field:'id', width:80, sort: true}", name: "ID"},
+            {data: "{field:'name', width:120, edit: 'text', sort: true}", name: "角色"},
+            {data: "{field:'refer', width:400, edit: 'text'}", name: "描述"},
+            {data: "{field:'uCount', width:80}", name: "员工数量"},
+            {data: "{field:'pCount', width:80}", name: "权限数量"},
+            {data: "{templet: sets}", name: "操作"}
+        ],
+        search:{
+            ['name']:'请输入角色名',
+            ['refer']:'请输入描述'
+        }
+    })
+
+    initToast()
+    const aid = sessionStorage.getItem('aid')
+</script>
+
+<script>
+    function sets(d) {
+        return `<span class="layui-btn layui-btn-mini layui-btn-normal" lay-event="edit">分配权限</span>`
+    }
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+        <button class="layui-btn" onclick="xadmin.open('添加角色','role-editor.html',600,400)">
+            <i class="iconfont">&#xe66c;</i> 添加
+        </button>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data
+            switch (obj.event) {
+                case 'edit':
+                    sessionStorage.setItem('roleId', data.id)
+                    xadmin.open('编辑', 'role-permission-editor.html', '', '', true)
+                    break
+            }
+        })
+
+        table.on(`edit(${pageId})`, obj => {
+            var value = obj.value
+            var data = obj.data
+            var field = obj.field
+            const req = {
+                AdminId: aid,
+                Id: data.id,
+                Name: field,
+                Value: value
+            }
+            httpTool.execute(urls.EditRole, req).then(res => {
+                if (res === undefined) return
+                showToast(undefined, '修改成功')
+            })
+        })
+
+        updateUi(table, form,false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form,true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetRoles, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        });
+    }
+</script>
+
+</html>

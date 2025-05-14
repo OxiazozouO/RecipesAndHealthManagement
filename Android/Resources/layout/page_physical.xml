@@ -1,0 +1,505 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="健康数据展示"
+                android:layout_gravity="center"
+                android:textSize="24sp"
+                android:padding="10dp"
+                android:textStyle="bold"/>
+
+        <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"/>
+
+        <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:id="@+id/id_physical_chart_style"
+                android:background="@drawable/shape_button_bg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/id_physical_chart_style_text"
+                    android:layout_width="wrap_content"
+                    android:textColor="#ffffff"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:layout_height="wrap_content"
+                    android:text="周报"
+                    android:gravity="center"
+                    android:textSize="20dp"
+                    android:textStyle="bold"/>
+
+            <ImageView
+                    android:src="@drawable/ic_left_arrow"
+                    android:rotation="-90"
+                    android:layout_marginRight="10dp"
+                    android:layout_gravity="center"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <View
+            android:background="#41000000"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"/>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/id_physical_swipe_refresh"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+        <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp">
+
+                <androidx.cardview.widget.CardView
+                        android:id="@+id/id_physical_bmi_card_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingBottom="10dp"
+                            android:orientation="vertical">
+
+                        <LinearLayout
+                                android:layout_gravity="center_horizontal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="60dp">
+
+                            <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginLeft="8dp"
+                                    android:src="@drawable/ic_sex"/>
+
+                            <TextView
+                                    android:layout_width="40dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="性别"
+                                    android:textColor="#333333"
+                                    android:textSize="15sp"/>
+
+                            <TextView
+                                    android:id="@+id/id_physical_sex_text"
+                                    android:layout_width="50dp"
+                                    android:gravity="left|center_vertical"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center_vertical"
+                                    android:background="@null"
+                                    android:textColor="#43496A"
+                                    android:textSize="16dp"/>
+
+                            <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginRight="3dp"
+                                    android:layout_marginLeft="8dp"
+                                    android:src="@drawable/ic_cake"/>
+
+                            <TextView
+                                    android:layout_width="40dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="年龄"
+                                    android:textColor="#333333"
+                                    android:textSize="15sp"/>
+
+                            <TextView
+                                    android:id="@+id/id_physical_age_text"
+                                    android:layout_width="100dp"
+                                    android:gravity="left|center_vertical"
+                                    android:layout_height="match_parent"
+                                    android:layout_gravity="center_vertical"
+                                    android:background="@null"
+                                    android:textColor="#43496A"
+                                    android:textSize="16dp"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:orientation="horizontal">
+
+                            <TextView
+                                    android:layout_gravity="center"
+                                    android:text="BMI"
+                                    android:textSize="20dp"
+                                    android:layout_marginLeft="16dp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <View
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="1dp"/>
+
+                            <TextView
+                                    android:id="@+id/id_physical_bmi_tag_text"
+                                    android:layout_gravity="center"
+                                    android:text="标准"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="18dp"
+                                    android:paddingLeft="10dp"
+                                    android:paddingRight="10dp"
+                                    android:layout_margin="3dp"
+                                    android:background="@drawable/shape_button_bg"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <TextView
+                                    android:id="@+id/id_physical_bmi_text"
+                                    android:text="20kg/m²"
+                                    android:textSize="24dp"
+                                    android:layout_marginLeft="20dp"
+                                    android:layout_marginRight="20dp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                                android:gravity="center"
+                                android:orientation="vertical"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                            <LinearLayout
+                                    android:layout_width="355dp"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal">
+
+                                <View
+                                        android:id="@+id/id_physical_bmi_bar_p"
+                                        android:layout_width="0dp"
+                                        android:layout_height="match_parent"/>
+
+                                <TextView
+                                        android:id="@+id/id_physical_bmi_bar_pos"
+                                        android:text="▼"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                    android:id="@+id/id_physical_bmi_bar"
+                                    android:layout_width="340dp"
+                                    android:layout_height="10dp"
+                                    android:orientation="horizontal"
+                                    android:background="@drawable/template_progress_bar">
+
+                                <View
+                                        android:id="@+id/id_physical_bmi_bar_a"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="60"
+                                        android:background="#00DCBC"
+                                        android:layout_height="match_parent"/>
+
+                                <View
+                                        android:id="@+id/id_physical_bmi_bar_b"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="54"
+                                        android:background="#7AFF0C"
+                                        android:layout_height="match_parent"/>
+
+                                <View
+                                        android:id="@+id/id_physical_bmi_bar_c"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="40"
+                                        android:background="#FFDA0C"
+                                        android:layout_height="match_parent"/>
+
+                                <View
+                                        android:id="@+id/id_physical_bmi_bar_d"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="60"
+                                        android:background="#FF5707"
+                                        android:layout_height="match_parent"/>
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                        <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center">
+
+                            <TextView
+                                    android:id="@+id/id_physical_height_text"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="体重：200公斤"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <View
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="1dp"/>
+
+                            <ImageView
+                                    android:layout_gravity="right"
+                                    android:id="@+id/id_physical_height_add"
+                                    android:background="@drawable/shape_button_bg"
+                                    android:src="@drawable/ic_add"
+                                    android:padding="5dp"
+                                    android:layout_marginTop="3dp"
+                                    android:layout_marginRight="10dp"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"/>
+
+                        </LinearLayout>
+
+                        <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/id_physical_height_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                        <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center">
+
+                            <TextView
+                                    android:id="@+id/id_physical_weight_text"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="体重：200公斤"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <View
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="1dp"/>
+
+                            <ImageView
+                                    android:layout_gravity="right"
+                                    android:id="@+id/id_physical_weight_add"
+                                    android:background="@drawable/shape_button_bg"
+                                    android:src="@drawable/ic_add"
+                                    android:padding="5dp"
+                                    android:layout_marginTop="3dp"
+                                    android:layout_marginRight="10dp"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"/>
+
+                        </LinearLayout>
+
+                        <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/id_physical_weight_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                        <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center">
+
+                            <TextView
+                                    android:id="@+id/id_physical_activity_level_text"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="体重：200公斤"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <View
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="1dp"/>
+
+                            <ImageView
+                                    android:layout_gravity="right"
+                                    android:id="@+id/id_physical_activity_level_add"
+                                    android:background="@drawable/shape_button_bg"
+                                    android:src="@drawable/ic_add"
+                                    android:padding="5dp"
+                                    android:layout_marginTop="3dp"
+                                    android:layout_marginRight="10dp"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"/>
+
+                        </LinearLayout>
+
+                        <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/id_physical_activity_level_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                        <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center">
+
+                            <TextView
+                                    android:id="@+id/id_physical_nutrient_text"
+                                    android:layout_marginLeft="20dp"
+                                    android:text="体重：200公斤"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"/>
+
+                            <View
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="1dp"/>
+
+                            <ImageView
+                                    android:layout_gravity="right"
+                                    android:id="@+id/id_physical_nutrient_add"
+                                    android:background="@drawable/shape_button_bg"
+                                    android:src="@drawable/ic_add"
+                                    android:padding="5dp"
+                                    android:layout_marginTop="3dp"
+                                    android:layout_marginRight="10dp"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"/>
+
+                        </LinearLayout>
+
+                        <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/id_physical_nutrient_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="@android:color/white"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="4dp"
+                        android:layout_margin="16dp">
+
+                    <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center">
+
+                        <TextView
+                                android:id="@+id/id_physical_energy_text"
+                                android:layout_marginLeft="20dp"
+                                android:text="体重：200公斤"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+
+                        <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/id_physical_energy_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="200dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</LinearLayout>

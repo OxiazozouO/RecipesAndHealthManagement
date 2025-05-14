@@ -1,0 +1,417 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationId>com.oxiaozouo.RecipesAndHealthManagement</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <Authors>oxiaozouo</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="FlexboxLayout.Xamarin.Android" Version="3.0.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
+    <PackageReference Include="Karamunting.Android.PhilJay.MPAndroidChart" Version="3.1.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="RestSharp" Version="106.0.1" />
+    <PackageReference Include="Xamarin.Android.Glide" Version="4.16.0.10" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.25" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Update="Resources\drawable\bg_card_border_ash.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_b.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_c.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\com_macro_nutrient_chart_item.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_button_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label2_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\search_toolbar2.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label3_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_round.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_round_pressed.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\linear_item_ingredient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\page_home_ingredient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_ingredient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_blue.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_purple.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_orange.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\style_progress_bar_orange_red.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_layout_msg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label4_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\activity_logout.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_flag.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label5_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label6_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_red.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_blue_1.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_text_bg_1.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_text_1.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_text_bg_2.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\template_progress_bar.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\com_chart_item.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label7_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label8_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_layout_msg_edit.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\activity_recipe.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_recipe_step.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label9_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_border1.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_nutrient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_border2.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_com_comment.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_border3.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\ic_no_collect.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\activity_add_favorite.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\activity_favorite_list.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_menu_button.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label10_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_favorite_info.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_button_bg5.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\activity_add_recipe.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_add_recipe_step.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_button_bg6.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label11_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\progress_drawable3.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\progress_drawable4.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\progress_drawable5.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\dotted_line1.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\dotted_line2.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\dotted_line3.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label1_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_diary_view.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_diary_nutrient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\comm_data_paked_bar.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\comm_data_paked_content.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\dotted_line4.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\info_diary_nutrient.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\drawable\shape_label12_bg.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\page_home_collection.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+    <AndroidResource Update="Resources\layout\item_collection.xml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateGeneratedFiles</Generator>
+    </AndroidResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AnyLibrary\AnyLibrary.csproj" />
+    <ProjectReference Include="..\Generator\Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\menu\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Helper\AndroidViewHelper.cs" />
+    <Compile Update="Holder\PageHomeRecipeHolder.cs">
+      <DependentUpon>PageHomeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageHomeHolder.cs">
+      <DependentUpon>ActivityMainHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageDiaryHolder.cs">
+      <DependentUpon>ActivityMainHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageReleaseHolder.cs">
+      <DependentUpon>ActivityMainHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageReleaseListItemHolder.cs">
+      <DependentUpon>ActivityMainHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageSettingHolder.cs">
+      <DependentUpon>ActivityMainHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityChangePasswordHolder.cs">
+      <DependentUpon>PageSettingHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\LinearRecipeHolder.cs">
+      <DependentUpon>PageHomeRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageHomeIngredientHolder.cs">
+      <DependentUpon>PageHomeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\LinearItemIngredientHolder.cs">
+      <DependentUpon>PageHomeIngredientHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemRecipeIngredientHolder.cs">
+      <DependentUpon>ActivityRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityRegisterHolder.cs">
+      <DependentUpon>ActivityLoginHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemRecipeStepHolder.cs">
+      <DependentUpon>ActivityRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemIngredientHolder.cs">
+      <DependentUpon>LinearItemIngredientHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemRecipeSmallHolder.cs">
+      <DependentUpon>LinearRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemLayoutMsgHolder.cs">
+      <DependentUpon>LayoutMsgHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemLayoutMsgEditHolder.cs">
+      <DependentUpon>LayoutMsgHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityLogoutHolder.cs">
+      <DependentUpon>PageSettingHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityFavoriteListHolder.cs">
+      <DependentUpon>PageSettingHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityIngredientHolder.cs">
+      <DependentUpon>ItemIngredientHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ActivityRecipeHolder.cs">
+      <DependentUpon>ItemRecipeSmallHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemIngredientInfoHolder.cs">
+      <DependentUpon>ActivityIngredientHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Component\ItemMacroNutrientChartHolder.cs">
+      <DependentUpon>MacroNutrientChart.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Component\RichEditorMenusHolder.cs">
+      <DependentUpon>RichEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Component\DataPackedContentHolder.cs">
+      <DependentUpon>DataPakedBarHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemAddRecipeStepHolder.cs">
+      <DependentUpon>ActivityAddRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\ItemAddStepIngredientHolder.cs">
+      <DependentUpon>ActivityAddRecipeHolder.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Holder\PageHomeCollectionHolder.cs">
+      <DependentUpon>PageHomeHolder.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="obj\Debug\net8.0-android\adb.props" />
+    <Content Include="obj\Debug\net8.0-android\Android.csproj.CoreCompileInputs.cache" />
+    <Content Include="obj\Debug\net8.0-android\Android.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\net8.0-android\Android.csproj.Up2Date" />
+    <Content Include="obj\Debug\net8.0-android\Android.dll" />
+    <Content Include="obj\Debug\net8.0-android\Android.genruntimeconfig.cache" />
+    <Content Include="obj\Debug\net8.0-android\Android.pdb" />
+    <Content Include="obj\Debug\net8.0-android\Android.runtimeconfig.json.bin" />
+    <Content Include="obj\Debug\net8.0-android\AndroidManifest.xml" />
+    <Content Include="obj\Debug\net8.0-android\android_debug_keystore.flag" />
+    <Content Include="obj\Debug\net8.0-android\buildid.txt" />
+    <Content Include="obj\Debug\net8.0-android\customview-map.txt" />
+    <Content Include="obj\Debug\net8.0-android\devices.cache" />
+    <Content Include="obj\Debug\net8.0-android\libraryimports.cache" />
+    <Content Include="obj\Debug\net8.0-android\libraryprojectimports.cache" />
+    <Content Include="obj\Debug\net8.0-android\R.cs.flag" />
+    <Content Include="obj\Debug\net8.0-android\resolvedassemblies.hash" />
+    <Content Include="obj\Debug\net8.0-android\static.flag" />
+    <Content Include="obj\Debug\net8.0-android\upload.flag" />
+  </ItemGroup>
+</Project>

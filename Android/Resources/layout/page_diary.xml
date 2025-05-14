@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <include
+            android:id="@+id/id_diary_data_pake_bar"
+            layout="@layout/component_data_paked_bar"/>
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <include
+                    android:id="@+id/id_diary_data_pake_content"
+                    layout="@layout/component_data_paked_content"/>
+
+            <LinearLayout
+                    android:id="@+id/id_diary_view_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+            <FrameLayout
+                    android:layout_marginTop="4dp"
+                    android:layout_width="360dp"
+                    android:layout_gravity="center"
+                    android:layout_height="24dp">
+
+                <View
+                        android:id="@+id/id_diary_energy_dotted_line_1"
+                        android:layout_marginLeft="-360dp"
+                        android:background="@drawable/dotted_line1"
+                        android:rotation="90"
+                        android:layout_width="720dp"
+                        android:layout_height="1.6dp"/>
+
+                <View
+                        android:id="@+id/id_diary_energy_dotted_line_2"
+                        android:layout_marginLeft="-360dp"
+                        android:background="@drawable/dotted_line2"
+                        android:rotation="90"
+                        android:layout_width="720dp"
+                        android:layout_height="1.6dp"/>
+
+                <View
+                        android:id="@+id/id_diary_energy_dotted_line_3"
+                        android:layout_marginLeft="-360dp"
+                        android:background="@drawable/dotted_line3"
+                        android:rotation="90"
+                        android:layout_width="720dp"
+                        android:layout_height="1.6dp"/>
+
+                <include
+                        android:id="@+id/id_diary_energy_progress"
+                        android:layout_gravity="bottom"
+                        android:layout_width="360dp"
+                        android:layout_height="8dp"
+                        layout="@layout/component_progress_bar"/>
+            </FrameLayout>
+
+            <LinearLayout
+                    android:id="@+id/id_diary_now_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="horizontal">
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                    <TextView
+                            android:textSize="16dp"
+                            android:text="当前能量值"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:textSize="16dp"
+                            android:textColor="@color/helper_k_r"
+                            android:text="基础代谢(BMR)"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:textSize="16dp"
+                            android:text="每日能量总耗(TDEE)"
+                            android:textColor="@color/helper_q_l"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:textSize="16dp"
+                            android:text="建议最大摄入量(TDEE修正)"
+                            android:textColor="@color/helper_orange_red_r"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+                </LinearLayout>
+
+                <LinearLayout
+                        android:layout_marginLeft="30dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                    <TextView
+                            android:id="@+id/id_diary_now_tdee"
+                            android:textSize="16dp"
+                            android:text="9999.99 kcal/天"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:id="@+id/id_diary_ree"
+                            android:textSize="16dp"
+                            android:textColor="@color/helper_k_r"
+                            android:text="9999.99 kcal/天"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:id="@+id/id_diary_tdee"
+                            android:textSize="16dp"
+                            android:text="9999.99 kcal/天"
+                            android:textColor="@color/helper_q_l"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+
+                    <TextView
+                            android:id="@+id/id_diary_max_tdee"
+                            android:textSize="16dp"
+                            android:textColor="@color/helper_orange_red_r"
+                            android:text="9999.99 kcal/天"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                    android:background="@drawable/shape_border2"
+                    android:id="@+id/id_diary_bnt1"
+                    android:text="本周统计"
+                    android:textSize="16dp"
+                    android:layout_margin="10dp"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:textStyle="bold"
+                    android:textColor="#872202"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
+
+                <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/id_diary_pie_chart_ent"
+                        android:layout_width="180dp"
+                        android:layout_height="180dp"/>
+
+                <include
+                        android:layout_width="120dp"
+                        android:id="@+id/id_diary_nutrient_chart"
+                        layout="@layout/component_macro_nutrient_chart"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_marginTop="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                <View
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:id="@+id/id_diary_nutrient_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+            <TextView
+                    android:id="@+id/id_diary_bnt2"
+                    android:layout_margin="10dp"
+                    android:background="@drawable/shape_border2"
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="⬤⬤⬤ 更多"
+                    android:paddingLeft="20dp"
+                    android:paddingRight="20dp"
+                    android:textStyle="bold"
+                    android:textColor="#F1A48C"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

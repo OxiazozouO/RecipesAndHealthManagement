@@ -1,0 +1,75 @@
+.json-view {
+    font-family: Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.json-punctuation {
+    font-weight: 500;
+}
+
+.json-key {
+    color: #8324C0FF;
+}
+
+.json-string {
+    color: #527D2BFF;
+}
+
+.json-number {
+    color: #053BC0FF;
+}
+
+.json-boolean {
+    color: #0233C1FF;
+}
+
+.json-null {
+    color: #660E7A;
+}
+
+.diff-structure {
+    background-color: #ffd7d5;
+}
+
+.diff-value {
+    background-color: #fff59f;
+}
+
+.diff-field {
+    background-color: #ffc8a6;
+}
+
+.order-marker {
+    font-size: 1em;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-family: monospace;
+    cursor: help;
+    font-style: initial;
+    color: white;
+    background-color: rgb(130, 2, 143);
+}
+
+.json-toggle-close {
+    display: none;
+    color: rgba(101, 19, 16, 0.75);
+    cursor: pointer;
+    margin-left: 5px;
+    font-size: 12px;
+}
+
+.json-toggle {
+    cursor: pointer;
+    color: rgba(16, 101, 21, 0.75);
+    user-select: none;
+    padding: 0 2px;
+    border-radius: 3px;
+    background-color: rgb(233, 245, 230);
+}
+
+.json-collapsible .json-content {
+    position: relative;
+    display: none;
+}

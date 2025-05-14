@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title>分类项管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/emoji-editor/emoji-editor.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+    <script type="text/javascript" src="../../comm/emoji-editor/emoji-editor.js"></script>
+    <style>
+        .layui-form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .layui-form-item {
+            margin-bottom: 25px;
+        }
+
+        .layui-form-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .tag-item {
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transform-origin: center center;
+        }
+
+        .tag-item.category {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #1890ff;
+        }
+
+        .tag-item.category.active {
+            background-color: #1890ff;
+            border: 1px solid #1890ff;
+            color: white;
+            box-shadow: 0 2px 5px rgba(24, 144, 255, 0.3);
+        }
+
+        .tag-item.emoji {
+            background: #fff7e6;
+            border-color: #ffd591;
+            color: #fa8c16;
+            font-size: 18px;
+        }
+
+        .tag-item.emoji.active {
+            background: #fa541c;
+            border-color: #fa541c;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(250, 84, 28, 0.3);
+        }
+
+        .tag-count {
+            margin-left: 6px;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn {
+            color: #1890ff;
+            cursor: pointer;
+            margin-bottom: 15px;
+            user-select: none;
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(24, 144, 255, 0.1);
+        }
+
+        .add-btn {
+            margin-top: 20px;
+            transition: all 0.3s;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0, 150, 136, 0.2);
+        }
+
+        .add-btn:hover {
+            box-shadow: 0 4px 8px rgba(0, 150, 136, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.03));
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .section-divider::after {
+            content: "可选标签";
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            padding: 0 15px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .tag-move-up {
+            animation: moveUp 0.5s forwards;
+        }
+
+        .tag-move-down {
+            animation: moveDown 0.5s forwards;
+        }
+
+        @keyframes moveUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-20px) scale(0.8);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-40px) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes moveDown {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(20px) scale(0.8);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(40px) scale(0);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layui-fluid" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div class="layui-row" style="width: 100%; max-width: 600px;">
+        <form class="layui-form"
+              style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333; font-size: 24px;">分类项管理</h2>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">已选标签</label>
+                <div class="layui-input-block">
+                    <div id="selected-category-container" class="tag-container"></div>
+                    <div id="category-toggle" class="toggle-btn" style="display: none;">展开更多</div>
+                    <div id="selected-emoji-container" class="tag-container"></div>
+                    <div id="emoji-toggle" class="toggle-btn" style="display: none;">展开更多</div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <button class="layui-btn" lay-filter="add" lay-submit=""
+                        style="width: 100%; background-color: #009688;">修改
+                </button>
+            </div>
+
+            <!-- 分隔线 -->
+            <div class="section-divider"></div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">搜索标签</label>
+                <div class="layui-input-block">
+                    <input type="text" id="search-input" placeholder="输入关键词搜索标签" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类标签</label>
+                <div class="layui-input-block">
+                    <div id="category-container" class="tag-container"></div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">表情标签</label>
+                <div class="layui-input-block">
+                    <div id="emoji-container" class="tag-container"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const aid = sessionStorage.getItem('aid')
+    const aaa = JSON.parse(sessionStorage.getItem('ci-edit'))
+
+    const ui = {
+        selectedCategoryContainer: document.getElementById('selected-category-container'),
+        selectedEmojiContainer: document.getElementById('selected-emoji-container'),
+        categoryContainer: document.getElementById('category-container'),
+        emojiContainer: document.getElementById('emoji-container'),
+        categoryToggle: document.getElementById('category-toggle'),
+        emojiToggle: document.getElementById('emoji-toggle'),
+        searchInput: document.getElementById('search-input')
+    }
+
+    // 初始化显示的标签数量
+    const initialVisibleCount = 3
+    let categoryExpanded = false
+    let emojiExpanded = false
+    let searchKeyword = ''
+    var mockData = []
+    var originalData = []
+</script>
+<script>
+    initLay((table, form) => {
+        var url = aaa.flag === 'ingredient'
+            ? urls.GetIngredientCategoryItems : aaa.flag === 'recipe'
+                ? urls.GetRecipeCategoryItems : aaa.flag === 'collection'
+                    ? urls.GetCollectionCategoryItems : null
+        httpTool.execute(url, {
+            AdminId: aid,
+            Id: aaa.id
+        }).then(res => {
+            if (res === undefined) return
+            mockData = res.data
+            // 创建原始数据的深拷贝，用于后续比较变化
+            originalData = JSON.parse(JSON.stringify(res.data))
+            init()
+        })
+
+        // 使用全局的originalData变量进行比较
+
+        form.on('submit(add)', data => {
+            // 收集发生变化的标签数据
+            const changedItems = {};
+
+            mockData.forEach(currentItem => {
+                changedItems[currentItem.id] = currentItem.isLike
+            });
+
+            // 如果没有变化，提示用户
+            if (changedItems.length === 0) {
+                layer.alert("修改成功", {icon: 6}, () => xadmin.close())
+                return false;
+            }
+
+            const url = aaa.flag === 'ingredient'
+                ? urls.UpdateIngredientCategoryItems : aaa.flag === 'recipe'
+                    ? urls.UpdateRecipeCategoryItems : aaa.flag === 'collection'
+                        ? urls.UpdateCollectionCategoryItems : null
+
+
+            // 发送请求
+            httpTool.execute(url, {
+                AdminId: aid,
+                Id: aaa.id,
+                Items: changedItems
+            }).then(res => {
+                if (res === undefined) return
+                layer.alert("修改成功", {icon: 6}, () => xadmin.close())
+            })
+
+            return false
+        });
+    })
+
+    // 渲染标签
+    function renderTags() {
+        // 过滤分类和表情数据
+        const categoryData = mockData.filter(item => item.typeId === 1)
+        const emojiData = mockData.filter(item => item.typeId === 2)
+
+        const filteredCategoryData = searchKeyword ?
+            categoryData.filter(item => item.name.includes(searchKeyword)) :
+            categoryData
+
+        const filteredEmojiData = searchKeyword ?
+            emojiData.filter(item => item.name.includes(searchKeyword)) :
+            emojiData
+
+        const activeCategoryTags = categoryData.filter(item => item.count > 0)
+        const activeEmojiTags = emojiData.filter(item => item.count > 0)
+
+        const zeroCategoryTags = categoryData.filter(item => item.count === 0)
+        const zeroEmojiTags = emojiData.filter(item => item.count === 0)
+
+        // 将计数为0的标签标记为未选中
+        zeroCategoryTags.forEach(item => item.isLike = false)
+        zeroEmojiTags.forEach(item => item.isLike = false)
+
+        // 渲染已选分类标签（计数>0）
+        renderSelectedTagGroup(activeCategoryTags, ui.selectedCategoryContainer, 'category', ui.categoryToggle,
+            categoryExpanded);
+
+        // 渲染已选表情标签（计数>0）
+        renderSelectedTagGroup(activeEmojiTags, ui.selectedEmojiContainer, 'emoji', ui.emojiToggle, emojiExpanded);
+
+        // 渲染可选分类标签（只包括计数为0的标签）
+        const availableCategoryTags = filteredCategoryData.filter(item => item.count === 0);
+        renderAvailableTagGroup(availableCategoryTags, ui.categoryContainer, null, 'category', false);
+
+        // 渲染可选表情标签（只包括计数为0的标签）
+        const availableEmojiTags = filteredEmojiData.filter(item => item.count === 0);
+        renderAvailableTagGroup(availableEmojiTags, ui.emojiContainer, null, 'emoji', false);
+    }
+
+    // 渲染已选标签组
+    function renderSelectedTagGroup(data, container, type, toggleBtn, isExpanded) {
+        container.innerHTML = '';
+
+        const visibleCount = isExpanded ? data.length : Math.min(initialVisibleCount, data.length);
+
+        for (let i = 0; i < Math.min(visibleCount, data.length); i++) {
+            const item = data[i];
+            const tagElement = document.createElement('div');
+            // 根据isLike状态决定是否添加active类
+            tagElement.className = `tag-item ${type} ${item.isLike ? 'active' : ''}`;
+            tagElement.innerHTML = `${item.name}<span class="tag-count">${item.count}</span>`;
+
+            tagElement.addEventListener('click', () => {
+                if (item.isLike) {
+                    tagElement.classList.add('tag-move-down');
+                }
+                item.isLike = !item.isLike
+                if (item.isLike) {
+                    item.count += 1
+                } else {
+                    item.count = item.count <= 1 ? 0 : item.count - 1
+                }
+                setTimeout(renderTags, 400)
+            })
+            container.appendChild(tagElement)
+        }
+
+        if (data.length > initialVisibleCount) {
+            toggleBtn.style.display = 'block'
+            toggleBtn.textContent = isExpanded ? '收起' : '展开更多'
+        } else {
+            toggleBtn.style.display = 'none'
+        }
+    }
+
+    function renderAvailableTagGroup(data, container, toggleBtn, type, isExpanded) {
+        container.innerHTML = '';
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            const tagElement = document.createElement('div');
+            tagElement.className = `tag-item ${type}`;
+            tagElement.innerHTML = `${item.name}`;
+            tagElement.addEventListener('click', () => {
+                tagElement.classList.add('tag-move-up');
+                setTimeout(() => {
+                    item.isLike = true
+                    item.count += 1
+                    renderTags()
+                }, 400)
+            });
+
+            container.appendChild(tagElement)
+        }
+
+        // 下方区域不需要展开/收起按钮
+        if (toggleBtn) {
+            toggleBtn.style.display = 'none'
+        }
+    }
+
+    // 初始化事件监听
+    function initEvents() {
+        // 分类展开/收起按钮
+        ui.categoryToggle.addEventListener('click', () => {
+            categoryExpanded = !categoryExpanded
+            renderTags()
+        })
+
+        // 表情展开/收起按钮
+        ui.emojiToggle.addEventListener('click', () => {
+            emojiExpanded = !emojiExpanded;
+            renderTags()
+        })
+
+        // 搜索输入框
+        ui.searchInput.addEventListener('input', e => {
+            searchKeyword = e.target.value.trim()
+            renderTags()
+        })
+    }
+
+    // 初始化页面
+    function init() {
+        renderTags();
+        initEvents();
+    }
+</script>
+</body>
+
+</html>

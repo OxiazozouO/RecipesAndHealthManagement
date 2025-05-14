@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../category.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'category-ingredient'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '账户管理'}, {href: '', title: '用户列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'       , id: 'clc'}", name: 'ID'},
+            {data: "{field:'collectionId'  , width:80  , sort: true}", name: 'ID'},
+            {data: "{field:'fileUrl'       , width:100  , templet: fileUrl}", name: '合集封面'},
+            {data: "{field:'title'         , width:180 }", name: '合集名'},
+            {data: "{field:'summary'          , width:100 , sort: true}", name: '简介'},
+            {data: "{field:'status'        , width:120, templet: status, sort: true}", name: '状态'},
+            {data: "{field:'categories', width:300, templet: categories}", name: '分类'},
+            {data: "{width:80, templet: sets}", name: '操作'}
+        ],
+        search: {
+            ['iName']: '请输入食材名',
+            ['refer']: '请输入简介',
+            ['status']: EntStatusOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script>
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, '合集')
+    }
+
+    function sets(d) {
+        return `<a title="编辑" lay-event="edit"><i class="iconfont18">&#xe683;</i></a>`
+    }
+
+    function status(d) {
+        return generateStatus(d.status, EntStatusMap, 'status')
+    }
+
+    function categories(d) {
+        return d.categories.map(item => {
+            return `<span class="category-tag type${item.typeId} ${item.isLike ? 'selected' : ''}" data-id="${item.id}">${item.name}(${item.count})</span>`
+        }).join('');
+    }
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData"> 获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'edit':
+                    sessionStorage.setItem('ci-edit', JSON.stringify({id: data.collectionId, flag: 'collection'}))
+                    xadmin.open('编辑', 'categoryitem-editor.html', '', '', true)
+                    break;
+            }
+        })
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetCategoryCollections, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+</script>
+
+</html>

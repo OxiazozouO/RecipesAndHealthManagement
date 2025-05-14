@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link href="../../../src/comm/html-editor/quill_1.3.6_.snow.css" rel="stylesheet">
+    <link href="../../../src/comm/html-editor/quill-zh.css" rel="stylesheet">
+    <link href="../../../src/comm/html-editor/html-editor.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../../src/comm/collection-editor/collection-editor.css">
+    <script src="../../../src/comm/html-editor/quill_1.3.6.js"></script>
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+    <script type="text/javascript" src="../../../src/comm/collection-editor/collection-editor.js"></script>
+</head>
+<body>
+</body>
+<script>
+    const aid = sessionStorage.getItem('aid')
+    const ui = getEditor(document.body)
+    const quill = createQuill();
+    releaseId = sessionStorage.getItem('releaseId') | -1
+
+    getMenus(ui.editor)
+    quill.on('text-change', (delta, oldDelta, source) => {
+        document.getElementById('html-info').innerText = getHtml(quill.root.innerHTML).html
+    });
+    init()
+
+    if (cef === 'edit' && ceid > 0) {
+        httpTool.execute(urls.GetCollection, {AdminId: aid, id: ceid}).then(res => {
+            if (res === undefined) return
+            initData(res.data)
+        })
+    }
+</script>
+</html>

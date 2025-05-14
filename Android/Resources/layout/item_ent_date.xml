@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="50dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:gravity="center_horizontal">
+
+    <TextView
+            android:id="@+id/id_date_num"
+            android:background="@drawable/shape_round"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="1"
+            android:gravity="center"
+            android:textSize="32dp"
+            android:textColor="#FFFFFF"/>
+
+    <FrameLayout
+            android:layout_marginTop="3dp"
+            android:layout_width="48dp"
+            android:layout_height="182dp">
+
+        <include
+                android:id="@+id/id_date_progress_bar"
+                android:layout_width="8dp"
+                android:layout_height="180dp"
+                android:layout_gravity="center_horizontal"
+                layout="@layout/component_progress_bar"/>
+
+        <View
+                android:id="@+id/id_dotted_line_1"
+                android:background="@drawable/dotted_line1"
+                android:layout_width="match_parent"
+                android:layout_height="1.6dp"/>
+
+        <View
+                android:id="@+id/id_dotted_line_2"
+                android:background="@drawable/dotted_line2"
+                android:layout_width="match_parent"
+                android:layout_height="1.6dp"/>
+
+        <View
+                android:id="@+id/id_dotted_line_3"
+                android:background="@drawable/dotted_line3"
+                android:layout_width="match_parent"
+                android:layout_height="1.6dp"/>
+    </FrameLayout>
+
+</LinearLayout>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="svgContainer"></div>
+
+<script>
+    const svgPath = 'iconfont.js';
+    const jsonPath = 'iconfont.json';
+    const svgs = [];
+    let glyphs = [];
+
+    var result = `<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" ><svg><metadata>Created by iconfont</metadata><defs><font id="iconfont" horiz-adv-x="1024" ><font-face font-family="iconfont" font-weight="500" font-stretch="normal" units-per-em="1024" ascent="896" descent="-128"/><missing-glyph />`;
+
+    // 使用 Promise.all 来等待两个 fetch 请求都完成
+    Promise.all([
+        fetch(svgPath).then(response => response.text()),
+        fetch(jsonPath).then(response => response.json())
+    ]).then(([svgText, jsonData]) => {
+        // 处理 SVG 文件
+        document.getElementById('svgContainer').innerHTML = svgText;
+        const svgElement = document.querySelector('svg');
+        const symbolElements = svgElement.querySelectorAll('symbol');
+        symbolElements.forEach(symbol => {
+            const id = symbol.id.replace('icon-', '');
+            const paths = symbol.querySelectorAll('path');
+            const dValues = Array.from(paths).map(path => path.getAttribute('d'));
+            svgs.push({
+                id: id,
+                d: dValues
+            });
+        });
+
+        // 处理 JSON 文件
+        glyphs = jsonData.glyphs;
+
+        // 生成最终的 SVG 内容
+        glyphs.forEach(glyph => {
+            svgs.forEach(svg => {
+                if (glyph.font_class === svg.id) {
+                    const ss = `<glyph glyph-name="${svg.id}" unicode="&#${glyph.unicode_decimal};" d="${svg.d}" horiz-adv-x="1024" />`;
+                    result += ss;
+                    return;
+                }
+            });
+        });
+
+        result += '</font></defs></svg>';
+
+        // 创建一个 Blob 对象
+        const blob = new Blob([result], {type: 'text/plain'});
+
+        // 创建一个下载链接
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'iconfont.svg'; // 设置下载文件的名称
+        link.textContent = 'Download SVG';
+
+        // 将链接添加到页面中
+        document.body.appendChild(link);
+
+        // 模拟点击链接以下载文件
+        link.click();
+
+        // 移除链接
+        document.body.removeChild(link);
+
+    }).catch(error => {
+        console.error('Error fetching files:', error);
+    });
+
+</script>
+</body>
+</html>

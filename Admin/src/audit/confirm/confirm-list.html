@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+    <style>
+        .flow-info {
+            display: flex;
+            position: relative;
+        }
+
+        .flow-status {
+            margin-right: 8px;
+        }
+
+        .flow-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flow-meta-item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'release'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '发布管理'}, {href: '', title: '发布列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'     , id: 'clc'}", name: 'ID'},
+            {data: "{field:'id'          , width:60  , sort: true}", name: 'ID'},
+            {data: "{field:'fileUrl'     , width:100 , templet: fileUrl}", name: '发布封面'},
+            {data: "{field:'title'       , width:200 }", name: '标题'},
+            {data: "{field:'idCategory'  , width:80 , sort: true, templet: idCategory}", name: '类型'},
+            {data: "{field:'createDate'  , width:150 , sort: true}", name: '创建日期'},
+            {data: "{field:'rStatus'     , width:100 , sort: true, templet: rStatus}", name: '最新状态'},
+            {data: "{field:'rInfo'       , width:180 , sort: true}", name: '最新操作信息'},
+            {data: "{                      width:120 , templet: sets}", name: '操作'},
+            {data: "{field:'rCreateDate' , width:160 , sort: true}", name: '最新操作时间'},
+            {data: "{field:'aName'       , width:200, sort: true, templet:author}", name: '作者'},
+        ],
+        search: {
+            ['title']: '请输入标题',
+            ['aName']: '请输入作者名',
+            ['aIsUser']: UserStatusOptions,
+            ['idCategory']: IdCategoryOptions,
+            ['rStatus']: StatusOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData"> 获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, '')
+    }
+
+    function author(d) {
+        return `${generateImg(d.aFileUrl, '')}${getNameSpan(d.aIsUser, d.aName)}`
+    }
+
+    function getUserImg(isUser, name, fileUrl) {
+        return `<img src="${fileUrl}" alt="" style="height:30px;margin-left: 20px" onClick="previewImg(this)"/>${getNameSpan(isUser, name)}`
+    }
+
+    function rStatus(d) {
+        return generateStatus(d.rStatus, StatusMap);
+    }
+
+    function getNameSpan(isUser, name) {
+        return `<span class="layui-btn layui-btn-mini ${isUser ? 'layui-btn-normal' : 'layui-btn-success'}">${isUser ? '用户' : '管理员'} ${name} </span>`
+    }
+
+    function idCategory(d) {
+        return generateStatus(d.idCategory, IdCategoryMap)
+    }
+
+    const setsData = [
+        {
+            icon: '&#xe64f;',
+            title: '查看',
+            f: [Status.Pending, Status.Approve, Status.Deleted, Status.NeedEdit, Status.Cancel, Status.Confirm, Status.Reject, Status.Locked, Status.Unknown],
+            eve: 'tab-view'
+        },
+        {icon: '&#xe7c4;', title: '审核通过', f: [Status.Confirm], eve: 'tab-audit'},
+        {icon: '&#xe67f;', title: '需修改', f: [Status.Approve, Status.Confirm], eve: 'tab-need-edit'},
+        {icon: '&#xe7c8;', title: '驳回', f: [Status.Confirm], eve: 'tab-reject'},
+        {icon: '&#xe675;', title: '删除', f: [Status.Cancel, Status.Reject], eve: 'tab-del'},
+    ];
+
+    function sets(d) {
+        return setsData
+            .map(item => item.f.includes(d.rStatus) ? `<a title="${item.title}" lay-event="${item.eve}"><i class="iconfont18">${item.icon}</i></a>` : '')
+            .join('')
+    }
+
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+
+        function updateRecipeStatus(url, data, obj, newStatus, successMsg) {
+            httpTool.execute(url, {
+                AdminId: aid,
+                Id: data.recipeId
+            }).then(res => {
+                if (res === undefined) return
+                layer.msg(successMsg)
+                data.status = newStatus
+                // 更新状态
+                obj.update({status: newStatus})
+                // 刷新当前行的操作按钮
+                let tr = $(obj.tr);
+                let tdSets = tr.find('td:not([data-field])');
+                if (tdSets.length > 0) {
+                    let setsTpl = $('#sets').html();
+                    let setsDom = layui.laytpl(setsTpl).render(data);
+                    tdSets.html(setsDom);
+                }
+            })
+        }
+
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data
+            switch (obj.event) {
+                case 'tab-view':
+                    sessionStorage.setItem('releaseId', data.id)
+                    xadmin.open(idCategory(data) + getUserImg(data.aIsUser, data.aName, data.aFileUrl), 'confirm-editor.html', '', '', true)
+                    break
+                case 'tab-audit':
+                    layer.confirm('确认通过该审核吗？', index => {
+                        httpTool.execute(urls.ApproveRelease, {
+                            AdminId: aid,
+                            Id: data.id
+                        }).then(res => {
+                            if (res === undefined) return
+                            layer.msg('通过成功')
+                        })
+                    })
+                    break
+                case 'tab-del':
+                    layer.confirm('确认要删除该资源吗？', index => {
+                        httpTool.execute(urls.RemoveRelease, {
+                            AdminId: aid,
+                            Id: data.id
+                        }).then(res => {
+                            if (res === undefined) return
+                            layer.msg('删除成功')
+                        })
+                    })
+                    break
+                case 'tab-need-edit':
+                    showModifyDialog(res => {
+                        layer.confirm('确定要打回修改？', () => {
+                            httpTool.execute(urls.NeedEditRelease, {
+                                AdminId: aid,
+                                Id: data.id,
+                                Info: res
+                            }).then(res => {
+                                if (res === undefined) return
+                                layer.msg('打回修改成功')
+                            })
+                        })
+                    })
+                    break
+                case 'tab-reject':
+                    showRejectDialog(res => {
+                        layer.confirm('确定要驳回？', () => {
+                            httpTool.execute(urls.RejectRelease, {
+                                AdminId: aid,
+                                Id: data.id,
+                                Info: res
+                            }).then(res => {
+                                if (res === undefined) return
+                                layer.msg('驳回成功')
+                                data.rStatus = Status.Reject
+                                obj.update({rStatus: Status.Reject})
+                            })
+                        })
+                    });
+                    break;
+                default:
+                    break;
+            }
+        })
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetReleases, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        });
+    }
+</script>
+
+</html>

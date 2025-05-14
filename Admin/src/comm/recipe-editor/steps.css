@@ -1,0 +1,86 @@
+.step-card {
+    margin-bottom: 15px;
+    border: 1px solid #e6e6e6;
+    padding: 15px;
+    border-radius: 4px;
+    position: relative;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+
+.del-step {
+    color: #ff5722;
+    cursor: pointer;
+}
+
+.time-input {
+    width: 150px;
+}
+
+.step-content {
+    transition: 0.3s ease;
+}
+
+.step-card.collapsed .step-content {
+    display: none;
+}
+
+.toggle-step {
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+.step-header h3 {
+    display: flex;
+    align-items: center;
+}
+
+
+.step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.step-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.move-step {
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s;
+}
+
+.move-step:hover {
+    color: #1890ff;
+}
+
+/* 动画类 */
+.step-card-moving-up {
+    transform: translateY(-100px);
+    z-index: 2;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    opacity: 0.9;
+}
+
+.step-card-moving-down {
+    transform: translateY(100px);
+    z-index: 2;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    opacity: 0.9;
+}
+
+.step-card-target {
+    opacity: 0.5;
+    transform: scale(0.98);
+}
+
+/* 高亮边框效果 */
+.step-card-highlight {
+    border: 2px solid #1E9FFF;
+    box-shadow: 0 0 10px rgba(30, 159, 255, 0.5);
+    transition: all 0.3s ease;
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'admin'
+    const {searchUi, parameter} = generateTab({
+        nav:[{href: '', title: '首页'}, {href: '', title: '账号管理'}, {href: '', title: '管理员列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'  , id: 'clc'}", name: 'ID'},
+            {data: "{field:'id'       , width:80 , sort: true}", name: 'ID'},
+            {data: "{field:'fileUrl'  , width:80 , templet: fileUrl}", name: '头像'},
+            {data: "{field:'name'     , width:120, sort: true}", name: '用户名'},
+            {data: "{field:'roleName' , width:150, sort: true}", name: '角色'},
+            {data: "{field:'status'   , width:100, templet: status, sort: true}", name: '是否启用'},
+            {data: "{                   width:150, templet: sets}", name: '操作'},
+        ],
+        search: {
+            ["name"]: "请输入用户名",
+            ["status"]: UserStatusOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+        <button class="layui-btn" onclick="addAdmin()">
+            <i class="iconfont">&#xe66c;</i> 添加
+        </button>
+    </div>
+</script>
+
+<script>
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, '')
+    }
+
+    function status(d) {
+        return generateStatus(d.status, UserStatusMap, 'status')
+    }
+
+    function sets(d) {
+        return `<a title="编辑" lay-event="edit"><i class="iconfont18">&#xe683;</i></a>`
+    }
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            console.log(obj.config.id)
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+            }
+        })
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'status':
+                    const status = data.status === UserStatus.Usable ? UserStatus.Logout : UserStatus.Usable;
+                    const req = {
+                        AdminId: aid,
+                        Id: data.id,
+                        Status: status === UserStatus.Usable
+                    }
+                    httpTool.execute(urls.AdminLogout, req).then(res => {
+                        if (res === undefined) return
+                        layer.msg('修改成功')
+                        obj.update({status: status});
+                        table.reload(pageId)
+                    })
+                    break;
+                case 'edit':
+                    sessionStorage.setItem('admin-edit', JSON.stringify({
+                        fileUrl: data.fileUrl,
+                        id: data.id,
+                        name: data.name,
+                        roleId: data.roleId,
+                        flag: "edit"
+                    }));
+                    xadmin.open('编辑', 'admin-editor.html', '', '', true)
+                    break;
+            }
+        });
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+
+
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetAdmins, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+
+
+    function addAdmin() {
+        sessionStorage.setItem('admin-edit', JSON.stringify({fileUrl: '', id: 0, flag: "add"}));
+        xadmin.open('添加用户', 'admin-editor.html', '', '', true)
+    }
+</script>
+
+</html>

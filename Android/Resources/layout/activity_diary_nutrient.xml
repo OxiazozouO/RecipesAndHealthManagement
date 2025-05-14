@@ -1,0 +1,244 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <TextView
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="3dp"
+            android:id="@+id/id_diary_nutrient_name"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="糖"
+            android:textColor="#2A6457"
+            android:textSize="26dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <FrameLayout
+            android:layout_gravity="center"
+            android:layout_marginTop="4dp"
+            android:layout_width="404dp"
+            android:padding="2dp"
+            android:layout_height="40dp">
+
+        <View
+                android:id="@+id/id_diary_nutrient_dotted_line_1"
+                android:layout_marginLeft="-400dp"
+                android:background="@drawable/dotted_line1"
+                android:rotation="90"
+                android:layout_width="800dp"
+                android:layout_height="2dp"/>
+
+        <View
+                android:id="@+id/id_diary_nutrient_dotted_line_2"
+                android:layout_marginLeft="-400dp"
+                android:background="@drawable/dotted_line2"
+                android:rotation="90"
+                android:layout_width="800dp"
+                android:layout_height="2dp"/>
+
+        <View
+                android:id="@+id/id_diary_nutrient_dotted_line_3"
+                android:layout_marginLeft="-400dp"
+                android:background="@drawable/dotted_line3"
+                android:rotation="90"
+                android:layout_width="800dp"
+                android:layout_height="2dp"/>
+
+        <include
+                android:id="@+id/id_diary_nutrient_progress"
+                android:layout_gravity="bottom"
+                android:layout_width="400dp"
+                android:layout_height="8dp"
+                layout="@layout/component_progress_bar"/>
+    </FrameLayout>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/id_diary_nutrient_name_text"
+                    android:text="含量："
+                    android:textColor="#2A6457"
+                    android:textSize="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:id="@+id/id_diary_dosage"
+                    android:text="9999.99 g"
+                    android:layout_marginLeft="10dp"
+                    android:textColor="#2A6457"
+                    android:textSize="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <View
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="1dp"/>
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/id_diary_nutrient_name_text"
+                    android:text="营养参考值："
+                    android:textColor="#2A6457"
+                    android:textSize="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:id="@+id/id_diary_nutrient_nrv"
+                    android:textColor="#2A6457"
+                    android:text="1111 NRV%"
+                    android:textSize="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <View
+                        android:layout_gravity="center"
+                        android:background="@drawable/dotted_line1"
+                        android:layout_width="24dp"
+                        android:layout_height="1.6dp"/>
+
+                <TextView
+                        android:text="平均需要量（EAR）"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@color/helper_k_r"
+                        android:textSize="18dp"
+                        android:layout_width="wrap_content"
+                        android:gravity="center"
+                        android:layout_height="40dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <View
+                        android:layout_gravity="center"
+                        android:background="@drawable/dotted_line2"
+                        android:layout_width="24dp"
+                        android:layout_height="1.6dp"/>
+
+                <TextView
+                        android:text="推荐摄入量（RNI）"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@color/helper_q_l"
+                        android:textSize="18dp"
+                        android:layout_width="wrap_content"
+                        android:gravity="center"
+                        android:layout_height="40dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <View
+                        android:layout_gravity="center"
+                        android:background="@drawable/dotted_line3"
+                        android:layout_width="24dp"
+                        android:layout_height="1.6dp"/>
+
+                <TextView
+                        android:layout_marginLeft="20dp"
+                        android:text="可耐受摄入量（UL）"
+                        android:textColor="@color/helper_orange_red_r"
+                        android:textSize="18dp"
+                        android:layout_width="wrap_content"
+                        android:gravity="center"
+                        android:layout_height="40dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+                android:layout_marginLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:text="9999.99 NRV%"
+                    android:id="@+id/id_diary_nutrient_ear"
+                    android:gravity="center"
+                    android:textColor="@color/helper_k_r"
+                    android:textSize="18dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"/>
+
+            <TextView
+                    android:text="9999.99 NRV%"
+                    android:id="@+id/id_diary_nutrient_rni"
+                    android:textColor="@color/helper_q_l"
+                    android:gravity="center"
+                    android:textSize="18dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"/>
+
+            <TextView
+                    android:text="9999.99 NRV%"
+                    android:id="@+id/id_diary_nutrient_ul"
+                    android:textColor="@color/helper_orange_red_r"
+                    android:gravity="center"
+                    android:textSize="18dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="3dp"
+            android:id="@+id/id_diary_nutrient_evaluate"
+            android:text="可能（大约85%）摄入充足"
+            android:textColor="#2A6457"
+            android:textSize="18dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/id_diary_nutrient_info"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="3dp"
+            android:text="维生素a是"
+            android:textColor="#2A6457"
+            android:textSize="18dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</LinearLayout>

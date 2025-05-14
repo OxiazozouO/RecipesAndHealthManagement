@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<HorizontalScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/id_editor_menus_heading"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_bold"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_bold"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_italic"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_italic"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_underline"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_underline"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_strikethrough"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_strikethrough"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_subscript"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_subscript"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_superscript"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_superscript"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_txt_color"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_font_color"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_bg_color"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_bg_color"/>
+
+        <View
+                android:layout_width="24dp"
+                android:layout_height="48dp"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_insert_numbers"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_list_order"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_insert_bullets"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_list_disorder"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_outdent"
+                android:padding="8dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_outdent"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_indent"
+                android:padding="8dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_indent"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_align_left"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_text_align_left"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_align_center"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_text_align_center"/>
+
+        <ImageView
+                android:id="@+id/id_editor_menus_align_right"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_text_align_right"/>
+    </LinearLayout>
+</HorizontalScrollView>

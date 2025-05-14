@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        android:layout_marginLeft="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 日期显示（大字体） -->
+    <TextView
+            android:id="@+id/id_date_text_large"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="11月11日"
+            android:textStyle="bold"
+            android:textSize="32dp"/>
+
+    <!-- 年份和今日（小字体） -->
+    <LinearLayout
+            android:layout_marginLeft="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/id_year_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:text="2030"/>
+
+        <TextView
+                android:id="@+id/id_today_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:text="今日"/>
+    </LinearLayout>
+
+    <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+
+    <TextView
+            android:id="@+id/id_today_icon"
+            android:text="5"
+            android:paddingTop="8dp"
+            android:textSize="18dp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:background="@drawable/ic_diary"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginRight="4dp"/>
+</LinearLayout>

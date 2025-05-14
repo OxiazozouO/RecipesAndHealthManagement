@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    <ImageView
+            android:id="@+id/id_rich_editor_insert_link"
+            android:padding="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_rich_editor_link"/>
+
+    <ImageView
+            android:id="@+id/id_rich_editor_insert_image"
+            android:padding="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_rich_editor_image"/>
+
+    <ImageView
+            android:id="@+id/id_rich_editor_insert_checkbox"
+            android:padding="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_rich_editor_checkbox_uncheck"/>
+
+    <View
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"/>
+
+
+    <ImageView
+            android:id="@+id/id_rich_editor_undo"
+            android:padding="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_rich_editor_undo"/>
+
+    <ImageView
+            android:id="@+id/id_rich_editor_redo"
+            android:padding="4dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_rich_editor_redo"/>
+</LinearLayout>

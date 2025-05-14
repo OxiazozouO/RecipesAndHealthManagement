@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <include
+            android:id="@+id/id_item_recipe_1"
+            layout="@layout/item_recipe_small"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        <include
+                android:id="@+id/id_item_recipe_2"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+        <include
+                android:id="@+id/id_item_recipe_3"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <include
+                android:id="@+id/id_item_recipe_4"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+
+        <include
+                android:id="@+id/id_item_recipe_5"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+    </LinearLayout>
+
+    <include
+            android:id="@+id/id_item_recipe_6"
+            layout="@layout/item_recipe_small"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"/>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+        <include
+                android:id="@+id/id_item_recipe_7"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+        <include
+                android:id="@+id/id_item_recipe_8"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+    </LinearLayout>
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <include
+                android:id="@+id/id_item_recipe_9"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+
+        <include
+                android:id="@+id/id_item_recipe_10"
+                layout="@layout/item_recipe_small"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"/>
+    </LinearLayout>
+
+</LinearLayout>

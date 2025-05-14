@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+<body>
+<div class="layui-fluid" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div class="layui-row" style="width: 100%; max-width: 600px;">
+        <form class="layui-form" style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">权限信息编辑</h2>
+            <div class="layui-form-item">
+                <label for="L_name" class="layui-form-label">
+                    <span class="x-red">*</span>权限路径</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="L_name" name="name" required="" lay-verify="url"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="L_title" class="layui-form-label">
+                    <span class="x-red">*</span>权限名字</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="L_title" name="title" required="" lay-verify="category"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="L_category" class="layui-form-label">
+                    <span class="x-red">*</span>分组名字</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="L_category" name="category" required="" lay-verify="title"
+                           autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="L_name" class="layui-form-label"></label>
+                <button id="add" class="layui-btn" lay-filter="add" lay-submit="" style="width: 100%; background-color: #009688;">增加</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script id="role-template" type="text/html">
+    <input type="radio" name="like1" lay-skin="primary" title="{{ role.title }}" value="{{ role.value }}" {{role.checked ? 'checked' : '' }}>
+</script>
+
+<script>
+    const aid = sessionStorage.getItem('aid')
+
+    const ui = {
+        add: document.getElementById("add"),
+        name: document.getElementById("L_name"),
+        title: document.getElementById("L_title"),
+        category: document.getElementById("L_category")
+    }
+
+    initLay((form, layer) => {
+        form.verify({
+            url: value => {
+                if (value.length < 1) {
+                    return '权限路径至少得1个字符'
+                }
+                if (value.length > 50) {
+                    return '权限路径最多50个字符'
+                }
+            },
+            category: value => {
+                if (value.length < 1) {
+                    return '权限名字至少得1个字符'
+                }
+                if (value.length > 80) {
+                    return '权限名字最多80个字符'
+                }
+            },
+            title: value => {
+                if (value.length < 1) {
+                    return '分组名字至少得1个字符'
+                }
+                if (value.length > 80) {
+                    return '分组名字最多80个字符'
+                }
+            }
+        })
+
+        //监听提交
+        form.on('submit(add)', data => {
+            const field = data.field
+            const req = {
+                AdminId: aid,
+                Url: field.name,
+                Category: field.category,
+                Title: field.title
+            }
+            httpTool.execute(urls.AddPermission, req).then(res => {
+                if (res === undefined) return
+                layer.alert("添加成功", {icon: 6}, () => {
+                    var index = parent.layer.getFrameIndex(window.name)
+                    parent.layer.close(index)
+                })
+            })
+            return false
+        })
+    })
+</script>
+</body>
+</html>

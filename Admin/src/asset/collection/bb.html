@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .container {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+        }
+
+        /* a 元素单独占满第一行 */
+        .a {
+            flex-basis: 100%;
+            background: #ffcccc;
+        }
+
+        /* b/c/d 自动水平排列在第二行 */
+        .b, .c, .d {
+            background: #ccffcc;
+            flex-grow: 1; /* 自动平分剩余空间 (可选) */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="a">a</div>
+    <div class="b">b</div>
+    <div class="c">c</div>
+    <div class="d">d</div>
+</div>
+</body>
+</html>

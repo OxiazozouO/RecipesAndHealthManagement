@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <TextView
+                android:id="@+id/id_add_step_name"
+                android:hint="请输入步骤名称(最多30字) *"
+                android:textSize="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <View
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="1dp"/>
+
+        <ImageView
+                android:id="@+id/id_add_step_close"
+                android:src="@drawable/ic_close"
+                android:layout_marginRight="16dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+    </LinearLayout>
+
+    <ImageView
+            android:id="@+id/id_add_step_file_url"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:src="@drawable/ic_add"
+            android:layout_marginRight="5dp"/>
+
+    <LinearLayout
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+        <ImageView
+                android:src="@drawable/ic_time"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        <TextView
+                android:id="@+id/id_add_step_time"
+                android:layout_marginLeft="4dp"
+                android:textSize="14dp"
+                android:hint="请输入本步骤所需的时间"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:src="@drawable/ic_stock"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:paddingLeft="4dp"/>
+
+        <TextView
+                android:textSize="12dp"
+                android:text="用料"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        <ImageView
+                android:id="@+id/id_add_step_ingredient_add"
+                android:src="@drawable/ic_add"
+                android:layout_marginLeft="20dp"
+                android:padding="4dp"
+                android:background="@drawable/shape_button_bg"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:paddingLeft="4dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/id_add_step_ingredient_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            <TextView
+                    android:textSize="14dp"
+                    android:text="占位"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:textSize="14dp"
+                    android:text="外显"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:textSize="14dp"
+                    android:text="食材名称"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:textSize="14dp"
+                    android:text="所占时间比"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:textSize="14dp"
+                    android:text="实际时间"
+                    android:layout_weight="3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+            android:id="@+id/id_add_step_refer"
+            android:textSize="14dp"
+            android:hint="请输入步骤的描述（最多200字） *"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:textColor="#12937c"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+    <TextView
+            android:id="@+id/id_add_step_summary"
+            android:textColor="#B1B112"
+            android:textSize="14dp"
+            android:hint="请输入总结/技巧/说明（最多200字）"
+            android:textStyle="normal"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:background="#fff0ffff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+</LinearLayout>

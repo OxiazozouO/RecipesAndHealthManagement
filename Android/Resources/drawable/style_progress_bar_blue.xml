@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--设置ProgressBar背景色-->
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="8dp"/>
+            <solid android:color="#ECECEC"/>
+        </shape>
+    </item>
+
+    <!--设置ProgressBar进度条颜色-->
+    <item android:id="@android:id/progress">
+        <clip android:clipOrientation="horizontal">
+            <shape>
+                <corners android:radius="8dp"/>
+                <gradient
+                        android:type="linear"
+                        android:startColor="#47CBCF"
+                        android:endColor="#63BCCC"
+                        android:angle="45"/>
+            </shape>
+        </clip>
+    </item>
+</layer-list>

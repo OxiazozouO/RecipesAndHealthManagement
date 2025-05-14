@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <LinearLayout
+            android:id="@+id/id_rich_editor_heading_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading_text"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:src="@drawable/ic_rich_editor_heading"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading1"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:src="@drawable/ic_rich_editor_heading_h1"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading2"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading_h2"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading3"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading_h3"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading4"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading_h4"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading5"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading_h5"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_heading6"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_heading_h6"/>
+
+        <ImageView
+                android:id="@+id/id_rich_editor_blockquote"
+                android:padding="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_rich_editor_quotes"/>
+    </LinearLayout>
+
+    <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:scrollbars="none">
+
+        <LinearLayout
+                android:id="@+id/id_rich_editor_color"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+    </HorizontalScrollView>
+</LinearLayout>

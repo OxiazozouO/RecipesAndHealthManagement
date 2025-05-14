@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+    <View
+            android:background="@drawable/dotted_line4"
+            android:layout_width="match_parent"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="3dp"
+            android:layout_height="0.6dp"/>
+
+    <TextView
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="3dp"
+            android:id="@+id/id_diary_nutrient_name"
+            android:text="糖"
+            android:textColor="#2A6457"
+            android:textSize="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <FrameLayout
+                android:id="@+id/id_diary_nutrient_chart_layout"
+                android:layout_marginTop="4dp"
+                android:layout_width="260dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:layout_marginLeft="6dp"
+                android:layout_height="24dp">
+
+            <View
+                    android:id="@+id/id_diary_nutrient_dotted_line_1"
+                    android:layout_marginLeft="-250dp"
+                    android:background="@drawable/dotted_line1"
+                    android:rotation="90"
+                    android:layout_width="500dp"
+                    android:layout_height="1.6dp"/>
+
+            <View
+                    android:id="@+id/id_diary_nutrient_dotted_line_2"
+                    android:layout_marginLeft="-250dp"
+                    android:background="@drawable/dotted_line2"
+                    android:rotation="90"
+                    android:layout_width="500dp"
+                    android:layout_height="1.6dp"/>
+
+            <View
+                    android:id="@+id/id_diary_nutrient_dotted_line_3"
+                    android:layout_marginLeft="-250dp"
+                    android:background="@drawable/dotted_line3"
+                    android:rotation="90"
+                    android:layout_width="500dp"
+                    android:layout_height="1.6dp"/>
+
+            <include
+                    android:id="@+id/id_diary_nutrient_progress"
+                    android:layout_gravity="bottom"
+                    android:layout_width="250dp"
+                    android:layout_height="8dp"
+                    layout="@layout/component_progress_bar"/>
+        </FrameLayout>
+
+        <TextView
+                android:layout_marginLeft="10dp"
+                android:id="@+id/id_diary_nutrient_nrv"
+                android:textColor="#2A6457"
+                android:layout_gravity="center_vertical"
+                android:text="1111 NRV%"
+                android:textSize="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"/>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+
+<script>
+    const flag = sessionStorage.getItem('select-flag');
+    let pageId = `${flag}-select`
+    const {searchUi, parameter} = generateTabByFlag()
+
+    const aid = sessionStorage.getItem('aid')
+    const ids = sessionStorage.getItem('ids');
+
+    function generateTabByFlag() {
+        if (flag === "ingredient") {
+            return generateTab({
+                nav: [{href: '', title: '首页'}, {href: '', title: '资源管理'}, {href: '', title: '食材列表'}],
+                bar: {id: pageId, data: `{toolbar: '#bar'}`},
+                data: [
+                    {data: "{type:'checkbox'       , id: 'clc'}", name: 'ID'},
+                    {data: "{field:'ingredientId'  , width:80  , sort: true}", name: 'ID'},
+                    {data: "{field:'fileUrl'       , width:80  , templet: fileUrl}", name: '食谱图像'},
+                    {data: "{field:'iName'         , width:150 }", name: '食材名'},
+                    {data: "{field:'unit'          , width:100 , sort: true}", name: '计量单位'},
+                    {data: "{field:'content'       , width:100 , sort: true}", name: '净含量'},
+                    {data: "{field:'status'   , width:100 , templet: status, sort: true}", name: '是否启用'},
+                    {data: "{field:'refer'         , width:80  , sort: true}", name: '简介'},
+                    {data: "{field:'allergy'       , width:80  , sort: true}", name: '过敏源'},
+                    {data: "{field:'uFileUrl'      , width:80  , templet: author}", name: '作者'}
+                ],
+                search: {
+                    ['iName']: "请输入食材名",
+                    ['refer']: "请输入简介",
+                    ['allergy']: "请输入过敏源",
+                    ['uName']: "请输入作者名",
+                    ['status']: EntStatusOptions
+                }
+            })
+        } else if (flag === "recipe") {
+            return generateTab({
+                nav: [{href: '', title: '首页'}, {href: '', title: '食谱管理'}, {href: '', title: '食谱列表'}],
+                bar: {id: pageId, data: `{toolbar: '#bar'}`},
+                data: [
+                    {data: "{type:'checkbox'       , id: 'clc'}", name: 'ID'},
+                    {data: "{field:'recipeId'      , width:80  , sort: true}", name: 'ID'},
+                    {data: "{field:'favoriteCount' , width:100 , sort: true}", name: '收藏量'},
+                    {data: "{field:'fileUrl'       , width:100 , templet: fileUrl}", name: '封面图'},
+                    {data: "{field:'title'         , width:200 }", name: '食谱标题'},
+                    {data: "{field:'rName'         , width:150 }", name: '食谱名称'},
+                    {data: "{field:'summary'       , width:200 }", name: '简介'},
+                    {data: "{field:'status'        , width:120, templet: status, sort: true}", name: '状态'},
+                    {data: "{field:'uName'         , width:180, sort: true, templet: author}", name: '作者'}
+                ],
+                search: {
+                    ['title']: "请输入食谱标题",
+                    ['summary']: "请输入简介",
+                    ['uName']: "请输入作者名",
+                    ['status']: EntStatusOptions
+                }
+            })
+        } else if (flag === 'collection') {
+            return generateTab({
+                nav: [{href: '', title: '首页'}, {href: '', title: '资源管理'}, {href: '', title: '合集列表'}],
+                bar: {id: pageId, data: `{toolbar: '#bar'}`},
+                data: [
+                    {data: "{type:'checkbox'       , id: 'clc'}", name: 'ID'},
+                    {data: "{field:'collectionId'  , width:80  , sort: true}", name: 'ID'},
+                    {data: "{field:'favoriteCount' , width:100 , sort: true}", name: '收藏量'},
+                    {data: "{field:'fileUrl'       , width:100  , templet: fileUrl}", name: '合集封面'},
+                    {data: "{field:'title'         , width:180 }", name: '合集名'},
+                    {data: "{field:'summary'          , width:100 , sort: true}", name: '简介'},
+                    {data: "{field:'status'        , width:120, templet: status, sort: true}", name: '状态'},
+                    {data: "{field:'createDate'         , width:160 , sort: true}", name: '添加时间'},
+                    {data: "{field:'ModifyDate'       , width:160 , sort: true}", name: '修改时间'},
+                    {data: "{field:'uName'         , width:180, sort: true, templet: author}", name: '作者'}
+                ],
+                search: {
+                    ["title"]: "请输入合集名",
+                    ["summary"]: "请输入简介",
+                    ["uName"]: "请输入作者名",
+                    ["status"]: EntStatusOptions
+                }
+            })
+        }
+        return null
+    }
+</script>
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData"> 确认选择</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, flag === 'ingredient'
+            ? '食材' : flag === 'recipe'
+                ? '食谱' : flag === 'collection'
+                    ? '合集' : '')
+    }
+
+    function author(d) {
+        return `${generateImg(d.uFileUrl, '')}${d.uName}`
+    }
+
+    function status(d) {
+        return generateStatus(d.status, EntStatusMap, 'status')
+    }
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    let ids = []
+                    if (flag === 'ingredient') {
+                        ids = table.checkStatus(pageId).data.map(d => d.ingredientId)
+                    } else if (flag === 'recipe') {
+                        ids = table.checkStatus(pageId).data.map(d => d.recipeId)
+                    } else if (flag === 'collection') {
+                        ids = table.checkStatus(pageId).data.map(d => d.collectionId)
+                    }
+                    window.parent.postMessage(JSON.stringify({action: 'ids', data: ids}), '*')
+                    closeLayer()
+                    break;
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        let url = urls.GetIngredients
+        if (flag === 'ingredient') {
+            url = urls.GetIngredients
+        } else if (flag === 'recipe') {
+            url = urls.GetRecipes
+        } else if (flag === 'collection') {
+            url = urls.GetCollections
+        }
+        httpTool.execute(url, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        });
+    }
+</script>
+
+</html>

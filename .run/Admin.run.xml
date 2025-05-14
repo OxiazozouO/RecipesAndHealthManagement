@@ -1,0 +1,5 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Admin" type="JavascriptDebugType" uri="http://localhost:63342/RecipesAndHealthManagement/Admin/index.html" useBuiltInWebServerPort="true">
+    <method v="2" />
+  </configuration>
+</component>

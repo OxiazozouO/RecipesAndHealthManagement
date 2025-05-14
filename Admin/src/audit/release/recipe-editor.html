@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <link rel="stylesheet" href="../../comm/recipe-editor/steps.css">
+    <link rel="stylesheet" href="../../comm/recipe-editor/ingredients.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+<body>
+<script src="../../comm/recipe-editor/recipe-editor.js"></script>
+<script src="../../comm/recipe-editor/ingredients.js"></script>
+<script src="../../comm/recipe-editor/steps.js"></script>
+<script>
+    releaseId = parseInt(sessionStorage.getItem("release-edit")) || -1
+    apiUrl = urls.EditRecipe
+
+    httpTool.execute(urls.GetReleaseRecipe, {AdminId: aid, Id: releaseId}).then(res => {
+        if (res === undefined) return
+        recipe = res.data
+        init()
+    })
+</script>
+
+</body>
+</html>

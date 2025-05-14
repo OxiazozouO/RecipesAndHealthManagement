@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'user'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '账户管理'}, {href: '', title: '用户列表'}],
+        bar: {id: pageId, data: `{toolbar: '#bar'}`},
+        data: [
+            {data: "{type:'checkbox'   , id: 'clc'}", name: 'ID'},
+            {data: "{field:'id'        , width:80  , sort: true}", name: 'ID'},
+            {data: "{field:'fileUrl'   , width:80  , templet: fileUrl}", name: '操作'},
+            {data: "{field:'name'      , width:120 , sort: true}", name: '用户名'},
+            {data: "{field:'status'    , width:100 , templet: status, sort: true}", name: '是否启用'},
+            {data: "{field:'unbanTime'    , width:160 , sort: true}", name: '截止封禁时间'},
+            {data: "{templet: sets}", name: '操作'}
+        ],
+        search: {
+            ["name"]: "请输入用户名",
+            ["status"]: UserStatusOptions
+        }
+    })
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script>
+
+    function status(d) {
+        return generateStatus(d.status, UserStatusMap, 'status')
+    }
+
+    function sets(d) {
+        return (d.id < 100 ? `<a title="编辑" lay-event="edit"><i class="iconfont18">&#xe683;</i></a>` : ``) +
+            (d.id < 100 ? `` : `<a title="修改密码" lay-event="edit-pwd"><i class="iconfont18">&#xe666;</i></a>`)
+    }
+
+    function fileUrl(d) {
+        return generateImg(d.fileUrl, '用户头像')
+    }
+
+    function author(d) {
+        return `${generateImg(d.fileUrl, '')}${d.name}`
+    }
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckData"> 获取选中行数据</button>
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break;
+            }
+        })
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'status':
+                    const status = data.status === UserStatus.Usable
+                        ? UserStatus.Ban
+                        : UserStatus.Usable;
+                    if (data.status === UserStatus.Usable) {
+                        layer.prompt({formType: 0, title: '请输入天数'}, (value, index) => {
+                            const day = parseInt(value)
+                            const req = {
+                                AdminId: aid,
+                                Id: data.id,
+                                Status: status === UserStatus.Usable,
+                                Day: day
+                            };
+                            httpTool.execute(urls.Ban, req).then(res => {
+                                if (res === undefined) return;
+                                layer.msg('修改成功');
+                                obj.update({status: status});
+                                table.reload(pageId);
+                            });
+                            layer.close(index);
+                        });
+                    } else if (data.status === UserStatus.Ban) {
+                        const req = {
+                            AdminId: aid,
+                            Id: data.id,
+                            Status: status === UserStatus.Usable,
+                            Day: 1
+                        };
+                        httpTool.execute(urls.Ban, req).then(res => {
+                            if (res === undefined) return;
+                            layer.msg('修改成功');
+                            obj.update({status: status});
+                            table.reload(pageId);
+                        });
+                    }
+
+                    break;
+                case 'edit':
+                    httpTool.execute(urls.GetUser, {AdminId: aid, Id: data.id}).then(res => {
+                        if (res === undefined) return
+                        const user = res.data
+                        sessionStorage.setItem('user-edit', JSON.stringify(user));
+                        xadmin.open('编辑', 'user-editor.html', '', '', true)
+                    })
+
+                    break;
+                case 'edit-pwd':
+                    sessionStorage.setItem('user-edit-pwd', data.id.toString());
+                    xadmin.open('修改密码', 'user-password.html', '', '', true)
+                    break;
+            }
+            form.render()
+        });
+
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetUsers, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        })
+    }
+</script>
+
+</html>

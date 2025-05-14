@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp">
+
+            <ImageView
+                    android:id="@+id/id_comment_file_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"/>
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+                android:layout_marginLeft="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/id_comment_name"
+                    android:textColor="#737373"
+                    android:layout_width="wrap_content"
+                    android:text="11111"
+                    android:textSize="12dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:id="@+id/id_comment_content"
+                    android:layout_width="wrap_content"
+                    android:text="做起来"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:textSize="16dp"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:id="@+id/id_comment_time"
+                    android:layout_width="wrap_content"
+                    android:text="2024-11-11"
+                    android:textColor="#22015E"
+                    android:textSize="10dp"
+                    android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <View
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="1dp"/>
+
+        <TextView
+                android:id="@+id/id_comment_report"
+                android:text="举报"
+                android:textSize="14dp"
+                android:layout_gravity="right|bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="10dp"/>
+
+    </LinearLayout>
+
+    <View
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_width="match_parent"
+            android:background="#777777"
+            android:layout_height="0.5dp"/>
+
+</LinearLayout>

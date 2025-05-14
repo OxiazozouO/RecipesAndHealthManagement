@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script type="text/javascript" src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script type="text/javascript" src="../../comm/myUtil/myUtil.js"></script>
+
+    <style>
+        /* 新增自定义样式 */
+        .perm-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .perm-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .perm-info {
+            margin-left: 15px;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .perm-info .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .perm-info .name {
+            color: #666;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        /* 调整原有表格样式 */
+        .layui-table td {
+            padding: 15px;
+            vertical-align: top;
+        }
+
+        .layui-input-block {
+            width: auto !important;
+            margin-left: 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+<div class="layui-fluid" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div class="layui-row" style="width: 100%; max-width: 1000px;">
+        <form action="" method="post" class="layui-form layui-form-pane"
+              style="background: #fff; padding: 30px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333; font-size: 24px;">角色权限编辑</h2>
+            <div class="layui-form-item layui-form-text">
+                <div class="layui-input-block" style="margin: 0 auto; max-width: 900px;">
+                    <table class="layui-table layui-input-block">
+                        <tbody id="permTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align: center; margin-top: 30px;">
+                <button class="layui-btn" lay-submit="" lay-filter="add"
+                        style="width: 200px; height: 40px; font-size: 16px; background-color: #009688;">确定
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    const aid = sessionStorage.getItem('aid')
+    const roleId = sessionStorage.getItem('roleId')
+
+    initLay((form) => {
+        httpTool.execute(urls.GetRolePermissions, {AdminId: aid, Id: roleId}).then(res => {
+            if (res === undefined) return
+            var data = res.data;
+            initUi(form, data)
+        })
+    })
+
+    function initUi(form, resData) {
+        var groupedData = {};
+        resData.forEach(item => {
+            if (!groupedData[item.category]) {
+                groupedData[item.category] = {
+                    category: item.category,
+                    items: [],
+                    allChecked: true
+                };
+            }
+            groupedData[item.category].items.push(item);
+            if (!item.checked) groupedData[item.category].allChecked = false;
+        });
+
+        // 生成表格HTML
+        var tableHtml = '';
+        Object.values(groupedData).forEach(group => {
+            tableHtml += `<tr>
+            <td width="200">
+                <input type="checkbox" name="category"
+                    value="${group.category}"
+                    lay-skin="primary"
+                    lay-filter="category"
+                    ${group.allChecked ? 'checked' : ''}>
+                ${group.category}
+            </td>
+            <td>
+                <div class="layui-input-block">`;
+            group.items.forEach(item => {
+                tableHtml += `
+                <div class="perm-item">
+                    <input type="checkbox"
+                        lay-skin="primary"
+                        name="title"
+                        value="${item.id}"
+                        lay-filter="title"
+                        ${item.checked ? 'checked' : ''}>
+                    <div class="perm-info">
+                        <div class="title">${item.title}</div>
+                        <div class="name">${item.name}</div>
+                    </div>
+                </div>`;
+            });
+            tableHtml += `</div></td></tr>`;
+        });
+        document.getElementById('permTable').innerHTML = tableHtml;
+        form.render();
+
+        // 分类复选框点击事件
+        form.on('checkbox(category)', data => {
+            var tr = layui.$(data.elem).closest('tr');
+            var checked = data.elem.checked;
+
+            tr.find('input[name="title"]').each(function () {
+                this.checked = checked;
+                updateOriginalData(this.value, checked)
+            });
+
+            form.render('checkbox')
+        });
+
+        // 权限复选框点击事件
+        form.on('checkbox(title)', data => {
+            var tr = layui.$(data.elem).closest('tr');
+            var categoryCheckbox = tr.find('input[name="category"]')[0];
+            var checkedItems = tr.find('input[name="title"]:checked').length
+            var totalItems = tr.find('input[name="title"]').length
+            categoryCheckbox.checked = checkedItems === totalItems
+            categoryCheckbox.indeterminate = checkedItems > 0 && checkedItems < totalItems
+
+            updateOriginalData(data.value, data.elem.checked)
+            form.render('checkbox')
+        });
+
+        function updateOriginalData(id, checked) {
+            resData.find(item => item.id === Number(id)).checked = checked;
+        }
+
+        // 监听提交
+        form.on('submit(add)', data => {
+            var selectedIds = resData
+                .filter(item => item.checked)
+                .map(item => item.id)
+
+            var req = {
+                AdminId: aid,
+                Id: roleId,
+                Permissions: selectedIds
+            }
+
+            httpTool.execute(urls.EditRolePermissions, req).then(res => {
+                if (res === undefined) return
+                layer.alert("修改成功", {icon: 6}, () => {
+                    var index = parent.layer.getFrameIndex(window.name)
+                    parent.layer.close(index)
+                })
+            })
+            return false
+        })
+    }
+</script>
+</body>
+</html>

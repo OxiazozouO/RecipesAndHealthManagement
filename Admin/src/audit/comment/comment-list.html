@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" lang="">
+
+<head>
+    <meta charset="UTF-8">
+    <title>评论管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="../../../css/font.css">
+    <link rel="stylesheet" href="../../../css/xadmin.css">
+    <link rel="stylesheet" href="../../comm/myUtil/myUtil.css">
+    <script src="../../../lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js"></script>
+    <script type="text/javascript" src="../../../js/httpUtil.js"></script>
+    <script src="../../comm/myUtil/myUtil.js"></script>
+</head>
+
+<body></body>
+<script>
+    const pageId = 'comment'
+    const {searchUi, parameter} = generateTab({
+        nav: [{href: '', title: '首页'}, {href: '', title: '评论管理'}, {href: '', title: '评论列表'}],
+        bar: {id: pageId, data: "{toolbar: '#bar'}"},
+        data: [
+            {data: "{type:'checkbox'   , id: 'clc'}", name: "ID"},
+            {data: "{field:'commentId' , width:80 , sort: true}", name: "评论ID"},
+            {data: "{field:'content'   , width:300, sort: true}", name: "评论内容"},
+            {data: "{field:'createDate', width:150, sort: true}", name: "创建日期"},
+            {data: "{field:'status'    , width:150, templet:status, sort: true}", name: "状态"},
+            {data: "{                    width:150, templet: sets}", name: "操作"},
+            {data: "{field:'uFileUrl'  , width:150, templet:uFileUrl, sort: true}", name: "用户头像"},
+            {data: "{field:'uName'     , width:150, sort: true}", name: "用户名"},
+            {data: "{field:'eFileUrl'  , width:150, templet:eFileUrl, sort: true}", name: "议论对象的图片"},
+            {data: "{field:'eName'     , width:150, sort: true}", name: "议论对象的名称"},
+        ],
+        search: {
+            ["uName"]: "请输入用户名",
+            ["eName"]: "请输入议论对象名称",
+            ["content"]: "请输入评论内容",
+            ["status"]: CommentStatusOptions
+        }
+    })
+    initToast()
+    const aid = sessionStorage.getItem('aid')
+</script>
+<script>
+    function sets(d) {
+        return `<a title="删除" lay-event="del"><i class="iconfont18">&#xe675;</i></a>`
+    }
+
+    function status(d) {
+        return generateStatus(d.status, CommentStatusMap, 'status')
+    }
+
+    function uFileUrl(d) {
+        return generateImg(d.uFileUrl, '')
+    }
+
+    function eFileUrl(d) {
+        return generateImg(d.eFileUrl, '')
+    }
+</script>
+
+<script type="text/html" id="bar">
+    <div class="layui-btn-container">
+        <div class="layui-btn layui-btn-sm" id="count">无选中</div>
+    </div>
+</script>
+
+<script>
+    initLay((laydate, table, form) => {
+        laydate.render({elem: '#start'})
+        laydate.render({elem: '#end'})
+
+        table.on(`tool(${pageId})`, obj => {
+            var data = obj.data;
+            switch (obj.event) {
+                case 'status':
+                    const status = data.status === CommentStatus.Usable ? CommentStatus.ForceOff : CommentStatus.Usable;
+                    const req = {
+                        AdminId: aid,
+                        Id: data.commentId,
+                        Status: data.status
+                    }
+                    httpTool.execute(urls.ReverseCommentStatus, req).then(res => {
+                        if (res === undefined) return
+                        layer.msg('修改成功')
+                        obj.update({status: status});
+                        table.reload(pageId)
+                    })
+                    break;
+                case 'del':
+                    layer.confirm('确认要删除吗？', index => {
+                        httpTool.execute(urls.DeleteComment, {AdminId: aid, Id: data.commentId}).then(res => {
+                            if (res === undefined) return
+                            layer.msg('已删除!', {icon: 1, time: 1000});
+                        })
+                    })
+                    break;
+            }
+        });
+
+        table.on(`toolbar(${pageId})`, obj => {
+            switch (obj.event) {
+                case 'getCheckData':
+                    getCheckData(table, pageId, 'count', true)
+                    break
+            }
+        })
+
+        table.on(`checkbox(${pageId})`, obj => getCheckData(table, pageId, 'count', false))
+        updateUi(table, form, false)
+
+        searchUi.bnt.addEventListener('click', event => {
+            event.preventDefault()
+            updateUi(table, form, true)
+        })
+    })
+
+    function updateUi(table, form, isSearch) {
+        httpTool.execute(urls.GetComments, {AdminId: aid}).then(res => {
+            if (res === undefined) return
+            initTab(table, form, `${aid}`, pageId, isSearch, res.data, parameter)
+        });
+    }
+</script>
+
+</html>

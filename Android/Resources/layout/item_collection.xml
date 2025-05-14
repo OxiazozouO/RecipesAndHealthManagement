@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingLeft="8dp"
+              android:paddingRight="8dp"
+              android:paddingBottom="4dp">
+    <!-- 封面 -->
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp">
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp">
+
+            <ImageView
+                    android:id="@+id/id_collection_cover_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:scaleType="centerCrop"/>
+        </androidx.cardview.widget.CardView>
+        <!-- 喜欢数 -->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="bottom">
+
+            <ImageView
+                    android:id="@+id/id_collection_islike"
+                    android:src="@drawable/ic_collect"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"/>
+
+            <TextView
+                    android:id="@+id/id_collection_like_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="111111111111111"
+                    android:shadowColor="#FFFFFF"
+                    android:shadowRadius="10"
+                    android:textColor="#FF1100"
+                    android:layout_gravity="center"/>
+
+            <View
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="1dp"/>
+
+            <TextView
+                    android:id="@+id/id_collection_max_category_or_mod_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10dp"
+                    android:layout_marginLeft="16dp"
+                    android:text="11111111"
+                    android:shadowColor="#FFFFFF"
+                    android:shadowRadius="4"
+                    android:textColor="#011CB3"
+                    android:layout_gravity="right|center"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 标题 -->
+    <TextView
+            android:id="@+id/id_collection_title_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:textColor="@android:color/black"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:lines="1"/>
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <!-- 作者头像 -->
+
+        <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp">
+
+            <ImageView
+                    android:id="@+id/id_collection_author_avatar"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:scaleType="centerCrop"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 作者名字 -->
+        <TextView
+                android:id="@+id/id_collection_author_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="16dp"
+                android:textSize="10dp"
+                android:text="11111"
+                android:layout_gravity="center"/>
+    </LinearLayout>
+</LinearLayout>

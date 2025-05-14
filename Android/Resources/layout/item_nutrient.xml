@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp">
+
+    <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/shape_border2">
+
+        <LinearLayout
+                android:padding="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+            <View
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="4dp"
+                    android:id="@+id/id_nutrient_author_avatar"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center_vertical"/>
+
+            <TextView
+                    android:id="@+id/id_nutrient_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="111111"
+                    android:textStyle="bold"
+                    android:textColor="#872202"/>
+
+            <TextView
+                    android:id="@+id/id_nutrient_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_gravity="top"
+                    android:text="111111"
+                    android:textColor="#FF9800"/>
+        </LinearLayout>
+
+        <TextView
+                android:id="@+id/id_nutrient_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16dp"
+                android:padding="4dp"
+                android:layout_marginLeft="20dp"
+                android:text="wwwwwww"/>
+    </LinearLayout>
+</LinearLayout>
